@@ -29,6 +29,9 @@ from qgis.PyQt.QtWidgets import QAction, QMessageBox
 from .resources import *
 # Import the code for the dialog
 from .RandomForestClassifier_dialog import RandomForestClassifierDialog
+import gdal
+import os
+import subprocess
 import os.path
 
 
@@ -325,6 +328,43 @@ class RandomForestClassifier:
             plt.savefig("/content/out.png")
             plt.show()
 
+
+    def tiles(self):
+
+        in_path = self.dlg.ImageInput_Field.filePath()
+        print(in_path)
+
+        if(not in_path):
+            print("Enter Input")
+            QMessageBox.critical(self.dlg, 'No Input', 'Please select the image to be splitted.')
+            return
+
+        # in_path = 'C:/forest.tif'         
+        out_path = 'C:/Users/Atishay/Desktop/tile_'
+             
+        tile_size_x = 500
+        tile_size_y = 700
+             
+        ds = gdal.Open(in_path)
+
+        complete = 0
+        self.dlg.progressBar.setValue(complete)
+
+        CREATE_NO_WINDOW = 0x08000000
+
+        #for i in range(5):
+        band = ds.GetRasterBand(1)
+        xsize = band.XSize
+        ysize = band.YSize
+                 
+        for i in range(0, xsize, tile_size_x):
+            for j in range(0, ysize, tile_size_y):
+                com_string = "gdal_translate -of GTIFF -srcwin " + str(i)+ ", " + str(j) + ", " + str(tile_size_x) + ", " + str(tile_size_y) + " " + str(in_path) + " " + str(out_path) + str(i) + "_" + str(j) + ".tif"
+                subprocess.call(com_string, creationflags=CREATE_NO_WINDOW)
+                complete = complete + 20
+                self.dlg.progressBar.setValue(complete)
+
+
            
 #-------------------------------------------------------------------------------------------------------
 
@@ -336,20 +376,31 @@ class RandomForestClassifier:
         if self.first_start == True:
             self.first_start = False
             self.dlg = RandomForestClassifierDialog()
-#--------------------------------------------------------------------------------------------------
-
         
         # show the dialog
+        self.dlg.progressBar.setValue(0)
         self.dlg.show()
 
-        IMG_ADD = self.dlg.input_img_box.filePath()
-        MODEL_ADD = self.dlg.input_img_box_2.filePath()
-        OUTPUT_ADD = self.dlg.input_img_box_3.filePath()
+        #--------------------CLASSIFIER TAB----------------------------------------
 
-        #self.dlg.pushButton.clicked.connect(self.saysome)
+        #Stores entries from the input boxes
+        # IMG_ADD = self.dlg.input_img_box.filePath()
+        # MODEL_ADD = self.dlg.input_img_box_2.filePath()
+        # OUTPUT_ADD = self.dlg.input_img_box_3.filePath()
+
+        # #Calls the classifier function after the button is pressed
+        # self.dlg.pushButton.clicked.connect(self.randomForest(IMG_ADD, MODEL_ADD, OUTPUT_ADD))
 
         #self.dlg.testButton.clicked.connect(QMessageBox(self.iface.mainWindow(), 'Reverse Geocoding Error', 'Wrong Format!\nExiting...'))
-        print(IMG_ADD)
+        #print(IMG_ADD)
+
+        #--------------------TRAIN TAB----------------------------------------------
+        
+        #Stores entries from the input boxes
+        #tr_IMG_ADD = self.dlg.ImageInput_Field.filePath()
+
+        #Calls the function to split image after the button is pressed
+        self.dlg.Train_Button.clicked.connect(self.tiles)
 
         # Run the dialog event loop
         result = self.dlg.exec_()
