@@ -376,7 +376,21 @@ class RandomForestClassifier:
                 self.dlg.Tile_progressBar.setValue(complete)
 
 
-           
+    def parameterenabling(self):
+        i = self.dlg.Method_comboBox.currentIndex()
+        print(i)
+        if i == 0:
+            self.dlg.LearningRate_Filed.setEnabled(True)
+            self.dlg.Iteration_comboBox.setEnabled(True)
+            self.dlg.HiddenLayer_comboBox.setEnabled(True)
+        if i == 1:
+            self.dlg.LearningRate_Filed.setEnabled(True)
+            self.dlg.Iteration_comboBox.setEnabled(True)
+            self.dlg.HiddenLayer_comboBox.setEnabled(True)
+        if i == 2:
+            self.dlg.LearningRate_Filed.setEnabled(True)
+            self.dlg.Iteration_comboBox.setEnabled(True)
+            self.dlg.HiddenLayer_comboBox.setEnabled(True)
 #-------------------------------------------------------------------------------------------------------
 
     def run(self):
@@ -405,13 +419,19 @@ class RandomForestClassifier:
         #self.dlg.testButton.clicked.connect(QMessageBox(self.iface.mainWindow(), 'Reverse Geocoding Error', 'Wrong Format!\nExiting...'))
         #print(IMG_ADD)
 
-        #--------------------TRAIN TAB----------------------------------------------
+        #--------------------Tiles Generation TAB----------------------------------------------
         
         #Stores entries from the input boxes
         #tr_IMG_ADD = self.dlg.ImageInput_Field.filePath()
 
         #Calls the function to split image after the button is pressed
         self.dlg.Tiles_Button.clicked.connect(self.tiles)
+
+        #---------------------- Train TAB -------------------------------------------------
+
+        #for enabeling parameter input widgets
+        self.dlg.Method_comboBox.activated.connect(self.parameterenabling)
+
 
         # Run the dialog event loop
         result = self.dlg.exec_()

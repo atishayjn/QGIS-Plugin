@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -344,6 +344,9 @@
        </property>
       </widget>
       <widget class="QgsFilterLineEdit" name="LearningRate_Filed">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>200</x>
@@ -357,6 +360,9 @@
        </property>
       </widget>
       <widget class="QComboBox" name="HiddenLayer_comboBox">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>200</x>
@@ -425,6 +431,9 @@
        </property>
       </widget>
       <widget class="QComboBox" name="Iteration_comboBox">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>200</x>
