@@ -331,7 +331,7 @@ class RandomForestClassifier:
 
     def tiles(self):
 
-        in_path = self.dlg.ImageInput_Field.filePath()
+        in_path = self.dlg.Tiles_Input.filePath()
         print(in_path)
 
         if(not in_path):
@@ -342,13 +342,24 @@ class RandomForestClassifier:
         # in_path = 'C:/forest.tif'         
         out_path = 'C:/Users/Atishay/Desktop/tile_'
              
-        tile_size_x = 500
-        tile_size_y = 700
+        tile_size_x = self.dlg.TileSizeX.value()
+        tile_size_y = self.dlg.TileSizeY.value()
              
+        if(not tile_size_x):
+            tile_size_x = int(self.dlg.TileSizeX.defaultValue())
+        else:
+           tile_size_x = int(tile_size_x)
+           
+        if(not tile_size_y):
+            tile_size_y = int(self.dlg.TileSizeX.defaultValue())
+        else:
+           tile_size_y = int(tile_size_y)
+
+
         ds = gdal.Open(in_path)
 
         complete = 0
-        self.dlg.progressBar.setValue(complete)
+        self.dlg.Tile_progressBar.setValue(complete)
 
         CREATE_NO_WINDOW = 0x08000000
 
@@ -362,7 +373,7 @@ class RandomForestClassifier:
                 com_string = "gdal_translate -of GTIFF -srcwin " + str(i)+ ", " + str(j) + ", " + str(tile_size_x) + ", " + str(tile_size_y) + " " + str(in_path) + " " + str(out_path) + str(i) + "_" + str(j) + ".tif"
                 subprocess.call(com_string, creationflags=CREATE_NO_WINDOW)
                 complete = complete + 20
-                self.dlg.progressBar.setValue(complete)
+                self.dlg.Tile_progressBar.setValue(complete)
 
 
            
@@ -378,7 +389,7 @@ class RandomForestClassifier:
             self.dlg = RandomForestClassifierDialog()
         
         # show the dialog
-        self.dlg.progressBar.setValue(0)
+        self.dlg.Tile_progressBar.setValue(0)
         self.dlg.show()
 
         #--------------------CLASSIFIER TAB----------------------------------------
@@ -400,7 +411,7 @@ class RandomForestClassifier:
         #tr_IMG_ADD = self.dlg.ImageInput_Field.filePath()
 
         #Calls the function to split image after the button is pressed
-        self.dlg.Train_Button.clicked.connect(self.tiles)
+        self.dlg.Tiles_Button.clicked.connect(self.tiles)
 
         # Run the dialog event loop
         result = self.dlg.exec_()

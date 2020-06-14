@@ -62,11 +62,10 @@
             # #To open the image:
             img_ds = gdal.Open(IMAGE_ADD, gdal.GA_ReadOnly)
 
-            img = np.zeros((img_ds.RasterYSize, img_ds.RasterXSize, img_ds.RasterCount),
-                           gdal_array.GDALTypeCodeToNumericTypeCode(img_ds.GetRasterBand(1).DataType))
+            img = np.zeros((img_ds.RasterYSize, img_ds.RasterXSize, img_ds.RasterCount), gdal_array.GDALTypeCodeToNumericTypeCode(img_ds.GetRasterBand(1).DataType))
 
-            for b in range(img.shape[2]):
-                img[:, :, b] = img_ds.GetRasterBand(b + 1).ReadAsArray()
+for b in range(img.shape[2]):
+    img[:, :, b] = img_ds.GetRasterBand(b + 1).ReadAsArray()
 
             print(img.shape)
 
