@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -879,6 +879,9 @@
          <height>21</height>
         </rect>
        </property>
+       <property name="storageMode">
+        <enum>QgsFileWidget::GetDirectory</enum>
+       </property>
       </widget>
       <widget class="QLabel" name="label">
        <property name="geometry">
@@ -925,6 +928,9 @@
          <height>21</height>
         </rect>
        </property>
+       <property name="storageMode">
+        <enum>QgsFileWidget::GetDirectory</enum>
+       </property>
       </widget>
       <widget class="QLabel" name="label_3">
        <property name="geometry">
@@ -939,7 +945,7 @@
         <string>Output Location</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="RunClassifier_Button">
        <property name="geometry">
         <rect>
          <x>480</x>

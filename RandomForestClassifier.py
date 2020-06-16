@@ -33,7 +33,8 @@ import gdal
 import os
 import subprocess
 import os.path
-
+import processing
+import glob
 
 class RandomForestClassifier:
     """QGIS Plugin Implementation."""
@@ -340,7 +341,7 @@ class RandomForestClassifier:
             return
 
         # in_path = 'C:/forest.tif'         
-        out_path = 'C:/Users/Atishay/Desktop/tile_'
+        out_path = 'C:/Users/HP/Desktop/Tile'
              
         tile_size_x = self.dlg.TileSizeX.value()
         tile_size_y = self.dlg.TileSizeY.value()
@@ -375,7 +376,7 @@ class RandomForestClassifier:
                 complete = complete + 20
                 self.dlg.Tile_progressBar.setValue(complete)
 
-
+    #--------------------------------------------------------------------------------------------------------------------
     def parameterenabling(self):
         i = self.dlg.Method_comboBox.currentIndex()
         print(i)
@@ -391,7 +392,22 @@ class RandomForestClassifier:
             self.dlg.LearningRate_Filed.setEnabled(True)
             self.dlg.Iteration_comboBox.setEnabled(True)
             self.dlg.HiddenLayer_comboBox.setEnabled(True)
-#-------------------------------------------------------------------------------------------------------
+    #---------------------------------------------------------------------------------------------------------------
+    def merge(self):
+        input_path = self.dlg.input_img_box.filePath()
+        # output_path = self.dlg.input_img_box_3.filePath()
+        output_path = 'C:/Users/HP/Desktop/Tile'            # Output location needs to be looked at
+        tiles = list()
+        for tile in glob.glob(input_path + "/" + "*.tif"):
+            tiles.append(tile)
+
+        processing.run("gdal:merge", {'INPUT': tiles, 'PCT': 'False',
+                                      'SEPERATE': 'False', 'DATA_TYPE': 1, 'NODATA_INPUT': None, 'NODATA_OUTPUT': None,
+                                      'OPTIONS': 'High Compression', 'EXTRA': 'None',
+                                      'OUTPUT': str(output_path) + '/' + 'Merge' + '.tif'})
+        print("All Done !!")
+
+    #-------------------------------------------------------------------------------------------------------
 
     def run(self):
         """Run method that performs all the real work"""
@@ -418,7 +434,7 @@ class RandomForestClassifier:
 
         #self.dlg.testButton.clicked.connect(QMessageBox(self.iface.mainWindow(), 'Reverse Geocoding Error', 'Wrong Format!\nExiting...'))
         #print(IMG_ADD)
-
+        self.dlg.RunClassifier_Button.clicked.connect(self.merge)
         #--------------------Tiles Generation TAB----------------------------------------------
         
         #Stores entries from the input boxes
@@ -426,6 +442,7 @@ class RandomForestClassifier:
 
         #Calls the function to split image after the button is pressed
         self.dlg.Tiles_Button.clicked.connect(self.tiles)
+
 
         #---------------------- Train TAB -------------------------------------------------
 
