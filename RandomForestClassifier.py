@@ -381,22 +381,22 @@ class RandomForestClassifier:
         print("All Done !!")
     #------------------------------------RANDOM FOREST TRAIN---------------------------------------
     
-    def resampler(self):
+    def resampler(self, REF_IMG, IMG_LABEL):
 
         from osgeo import gdal, gdalconst
 
         self.dlg.train_progressBar.setValue(5)
 
-        IMG_ADD = self.dlg.train_img_add.filePath()
-        IMG_LABEL_ADD = self.dlg.train_img_label.filePath()
+        # IMG_ADD = self.dlg.train_img_add.filePath()
+        # IMG_LABEL_ADD = self.dlg.train_img_label.filePath()
 
 
-        input1 = gdal.Open(IMG_LABEL_ADD, gdalconst.GA_ReadOnly)
+        input1 = gdal.Open(IMG_LABEL, gdalconst.GA_ReadOnly)
         inputProj = input1.GetProjection()
         inputTrans = input1.GetGeoTransform()
 
 
-        reference = gdal.Open(IMG_ADD, gdalconst.GA_ReadOnly)
+        reference = gdal.Open(REF_IMG, gdalconst.GA_ReadOnly)
         referenceProj = reference.GetProjection()
         referenceTrans = reference.GetGeoTransform()
         bandreference = reference.GetRasterBand(1)    
@@ -428,14 +428,14 @@ class RandomForestClassifier:
         from sklearn.metrics import confusion_matrix,classification_report
         
         IMG_ADD = self.dlg.train_img_add.filePath()
-        VALIDATION_SPLIT = 0.2
+        IMG_LABEL_ADD = self.dlg.train_img_label.filePath()
+        VALIDATION_SPLIT = 0.2                                  #TO BE TAKEN FROM USER (Train Val Ratio)
 
         self.dlg.train_progressBar.setValue(20)
 
-        RESAMPLED_IMG_LABEL1 = self.resampler()
+        RESAMPLED_IMG_LABEL1 = self.resampler(IMG_ADD, IMG_LABEL_ADD)
 
         self.dlg.train_progressBar.setValue(40)
-
 
 
         img_ds = gdal.Open(IMG_ADD, gdal.GA_ReadOnly)
