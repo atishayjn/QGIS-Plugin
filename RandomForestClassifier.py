@@ -249,6 +249,8 @@ class RandomForestClassifier:
             pip.main(["install", "--user", "matplotlib"])
 
             import matplotlib.pyplot as plt
+
+        self.dlg.Clfr_progressBar.setValue(30)
             
 
         IMAGE_ADD = self.dlg.input_img_box.filePath()
@@ -273,8 +275,9 @@ class RandomForestClassifier:
             print('Reshaped from {n} to {o}'.format(o=img.shape,
                                                     n=img_as_array.shape))
                                                     
+        self.dlg.Clfr_progressBar.setValue(60)
 
-            class_prediction = rf.predict(img_as_array)
+        class_prediction = rf.predict(img_as_array)
 
         class_prediction = class_prediction.reshape(img[:, :, 0].shape)
         print(class_prediction.shape)                               
@@ -296,7 +299,8 @@ class RandomForestClassifier:
         outband.WriteArray(class_prediction)
         outband.FlushCache()
 
-
+        self.dlg.Clfr_progressBar.setValue(100)
+#------------------------------------------------------------------------------------------
 
     def tiles(self):
 
@@ -344,6 +348,7 @@ class RandomForestClassifier:
                 complete = complete + 20
                 self.dlg.Tile_progressBar.setValue(complete)
 
+
     #--------------------------------------------------------------------------------------------------------------------
     def parameterenabling(self):
         i = self.dlg.Method_comboBox.currentIndex()
@@ -374,8 +379,111 @@ class RandomForestClassifier:
                                       'OPTIONS': 'High Compression', 'EXTRA': 'None',
                                       'OUTPUT': str(output_path) + '/' + 'Merge' + '.tif'})
         print("All Done !!")
+    #------------------------------------RANDOM FOREST TRAIN---------------------------------------
+    
+    def resampler(self):
 
-    #-------------------------------------------------------------------------------------------------------
+        from osgeo import gdal, gdalconst
+
+        self.dlg.train_progressBar.setValue(5)
+
+        IMG_ADD = self.dlg.train_img_add.filePath()
+        IMG_LABEL_ADD = self.dlg.train_img_label.filePath()
+
+
+        input1 = gdal.Open(IMG_LABEL_ADD, gdalconst.GA_ReadOnly)
+        inputProj = input1.GetProjection()
+        inputTrans = input1.GetGeoTransform()
+
+
+        reference = gdal.Open(IMG_ADD, gdalconst.GA_ReadOnly)
+        referenceProj = reference.GetProjection()
+        referenceTrans = reference.GetGeoTransform()
+        bandreference = reference.GetRasterBand(1)    
+        x = reference.RasterXSize 
+        y = reference.RasterYSize
+
+        RESAMPLED_IMG_LABEL = "Delhi_ROI_resampled2.tif" #Path to output file
+        driver= gdal.GetDriverByName('GTiff')
+        output = driver.Create(RESAMPLED_IMG_LABEL,x,y,1,bandreference.DataType)
+        output.SetGeoTransform(referenceTrans)
+        output.SetProjection(referenceProj)
+
+        gdal.ReprojectImage(input1,output,inputProj,referenceProj,gdalconst.GRA_Bilinear)
+
+        del output
+
+        return RESAMPLED_IMG_LABEL
+
+        
+
+#------------------------------------------------------------------------------------
+    def rfc_train(self):
+
+        from osgeo import gdal, gdal_array
+        import numpy as np
+
+        from sklearn.model_selection import train_test_split
+        from sklearn.ensemble import RandomForestClassifier
+        from sklearn.metrics import confusion_matrix,classification_report
+        
+        IMG_ADD = self.dlg.train_img_add.filePath()
+        VALIDATION_SPLIT = 0.2
+
+        self.dlg.train_progressBar.setValue(20)
+
+        RESAMPLED_IMG_LABEL1 = self.resampler()
+
+        self.dlg.train_progressBar.setValue(40)
+
+
+
+        img_ds = gdal.Open(IMG_ADD, gdal.GA_ReadOnly)
+
+        img = np.zeros((img_ds.RasterYSize, img_ds.RasterXSize, img_ds.RasterCount),
+                       gdal_array.GDALTypeCodeToNumericTypeCode(img_ds.GetRasterBand(1).DataType))
+
+        for b in range(img.shape[2]):
+            img[:, :, b] = img_ds.GetRasterBand(b + 1).ReadAsArray()
+
+        print(img.shape)
+
+        roi_ds = gdal.Open(RESAMPLED_IMG_LABEL1, gdal.GA_ReadOnly)
+
+        roi = roi_ds.GetRasterBand(1).ReadAsArray().astype(np.uint8)
+
+        print(roi.shape)
+
+        self.dlg.train_progressBar.setValue(50)
+
+        np.vstack(np.unique(roi, return_counts=True)).T
+
+        features = img[roi > 0, :]
+        labels = roi[roi > 0]
+        print(features.shape)
+        print(labels.shape)
+
+        X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=VALIDATION_SPLIT, random_state=0)
+
+        print(X_train.shape)
+        print(X_test.shape)
+
+        self.dlg.train_progressBar.setValue(60)
+
+        rf = RandomForestClassifier(n_estimators=20, max_depth=None, n_jobs=-1, oob_score=True)   # n_estim = Trees, max_depth = Depth
+
+        rf.fit(X_train, y_train)
+
+        self.dlg.train_progressBar.setValue(80)
+
+        import pickle
+        filename = 'model_5band_plugged.sav'
+        pickle.dump(rf, open(filename, 'wb'))
+
+        self.dlg.train_progressBar.setValue(100)
+
+
+#-----------------------------------------------------------------------------------------------------------
 
     def run(self):
         """Run method that performs all the real work"""
@@ -388,6 +496,8 @@ class RandomForestClassifier:
         
         # show the dialog
         self.dlg.Tile_progressBar.setValue(0)
+        self.dlg.train_progressBar.setValue(0)
+        self.dlg.Clfr_progressBar.setValue(0)
         self.dlg.show()
 
         #--------------------CLASSIFIER TAB----------------------------------------
@@ -414,11 +524,18 @@ class RandomForestClassifier:
         self.dlg.Tiles_Button.clicked.connect(self.tiles)
 
 
-        #---------------------- Train TAB -------------------------------------------------
+        #---------------------- Train TAB (NN based)-------------------------------------------------
 
         #for enabeling parameter input widgets
         self.dlg.Method_comboBox.activated.connect(self.parameterenabling)
 
+
+        #----------------------------Train TAB-------------------------------------------------------
+
+        self.dlg.train_button.clicked.connect(self.rfc_train)
+
+
+        #--------------------------------------------------------------------------------------------
 
         # Run the dialog event loop
         result = self.dlg.exec_()
