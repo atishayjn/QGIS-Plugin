@@ -24,7 +24,7 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QMessageBox
-
+from qgis.core import *
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
@@ -35,6 +35,7 @@ import subprocess
 import os.path
 import processing
 import glob
+
 
 class RandomForestClassifier:
     """QGIS Plugin Implementation."""
@@ -86,18 +87,17 @@ class RandomForestClassifier:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('RandomForestClassifier', message)
 
-
     def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
+            self,
+            icon_path,
+            text,
+            callback,
+            enabled_flag=True,
+            add_to_menu=True,
+            add_to_toolbar=True,
+            status_tip=None,
+            whats_this=None,
+            parent=None):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -174,7 +174,6 @@ class RandomForestClassifier:
         # will be set False in run()
         self.first_start = True
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -189,7 +188,7 @@ class RandomForestClassifier:
     # def saysome(self):
     #     print("Button Clicked")
 
-#------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------
     # def array2raster(newRasterfn, geotrans, proj, array):
 
     #     cols = array.shape[1]
@@ -202,14 +201,13 @@ class RandomForestClassifier:
     #     outRaster.SetProjection(proj)
     #     outband.FlushCache()
 
-
     def randomForest(self):
-    #import statements
-    
+        # import statements
+
         try:
             from sklearn.model_selection import train_test_split
             from sklearn.ensemble import RandomForestClassifier
-            from sklearn.metrics import confusion_matrix,classification_report
+            from sklearn.metrics import confusion_matrix, classification_report
         except ImportError:
             print("scikit-learn package not present\nInstalling...")
             import pip
@@ -217,7 +215,7 @@ class RandomForestClassifier:
 
             from sklearn.model_selection import train_test_split
             from sklearn.ensemble import RandomForestClassifier
-            from sklearn.metrics import confusion_matrix,classification_report
+            from sklearn.metrics import confusion_matrix, classification_report
 
         try:
             from osgeo import gdal, gdal_array
@@ -233,7 +231,6 @@ class RandomForestClassifier:
             import pip
             pip.main(["install", "--user", "pickle"])
             import pickle
-
 
         try:
             import numpy as np
@@ -251,11 +248,10 @@ class RandomForestClassifier:
             import matplotlib.pyplot as plt
 
         self.dlg.Clfr_progressBar.setValue(30)
-            
 
         IMAGE_ADD = self.dlg.input_img_box.filePath()
         MODEL_ADD = self.dlg.input_img_box_2.filePath()
-        #OUTPUT_ADD = fp3
+        # OUTPUT_ADD = fp3
 
         # #To open the image:
         img_ds = gdal.Open(IMAGE_ADD, gdal.GA_ReadOnly)
@@ -274,21 +270,20 @@ class RandomForestClassifier:
             img_as_array = img.reshape(-1, img.shape[2])
             print('Reshaped from {n} to {o}'.format(o=img.shape,
                                                     n=img_as_array.shape))
-                                                    
+
         self.dlg.Clfr_progressBar.setValue(60)
 
         class_prediction = rf.predict(img_as_array)
 
         class_prediction = class_prediction.reshape(img[:, :, 0].shape)
-        print(class_prediction.shape)                               
-
+        print(class_prediction.shape)
 
         geotrans = img_ds.GetGeoTransform()
         proj = img_ds.GetProjection()
         fname = 'Delhi_classified.tif'
-        #self.array2raster(fname, geotrans, proj, class_prediction)
+        # self.array2raster(fname, geotrans, proj, class_prediction)
 
-        #To convert array to raster
+        # To convert array to raster
         cols = class_prediction.shape[1]
         rows = class_prediction.shape[0]
         driver = gdal.GetDriverByName('GTiff')
@@ -300,34 +295,34 @@ class RandomForestClassifier:
         outband.FlushCache()
 
         self.dlg.Clfr_progressBar.setValue(100)
-#------------------------------------------------------------------------------------------
+
+    # ------------------------------------------------------------------------------------------
 
     def tiles(self):
 
         in_path = self.dlg.Tiles_Input.filePath()
         print(in_path)
 
-        if(not in_path):
+        if (not in_path):
             print("Enter Input")
             QMessageBox.critical(self.dlg, 'No Input', 'Please select the image to be splitted.')
             return
 
-        # in_path = 'C:/forest.tif'         
+        # in_path = 'C:/forest.tif'
         out_path = 'C:/Users/HP/Desktop/Tile'
-             
+
         tile_size_x = self.dlg.TileSizeX.value()
         tile_size_y = self.dlg.TileSizeY.value()
-             
-        if(not tile_size_x):
+
+        if (not tile_size_x):
             tile_size_x = int(self.dlg.TileSizeX.defaultValue())
         else:
-           tile_size_x = int(tile_size_x)
-           
-        if(not tile_size_y):
+            tile_size_x = int(tile_size_x)
+
+        if (not tile_size_y):
             tile_size_y = int(self.dlg.TileSizeX.defaultValue())
         else:
-           tile_size_y = int(tile_size_y)
-
+            tile_size_y = int(tile_size_y)
 
         ds = gdal.Open(in_path)
 
@@ -336,20 +331,21 @@ class RandomForestClassifier:
 
         CREATE_NO_WINDOW = 0x08000000
 
-        #for i in range(5):
+        # for i in range(5):
         band = ds.GetRasterBand(1)
         xsize = band.XSize
         ysize = band.YSize
-                 
+
         for i in range(0, xsize, tile_size_x):
             for j in range(0, ysize, tile_size_y):
-                com_string = "gdal_translate -of GTIFF -srcwin " + str(i)+ ", " + str(j) + ", " + str(tile_size_x) + ", " + str(tile_size_y) + " " + str(in_path) + " " + str(out_path) + str(i) + "_" + str(j) + ".tif"
+                com_string = "gdal_translate -of GTIFF -srcwin " + str(i) + ", " + str(j) + ", " + str(
+                    tile_size_x) + ", " + str(tile_size_y) + " " + str(in_path) + " " + str(out_path) + str(
+                    i) + "_" + str(j) + ".tif"
                 subprocess.call(com_string, creationflags=CREATE_NO_WINDOW)
                 complete = complete + 20
                 self.dlg.Tile_progressBar.setValue(complete)
 
-
-    #--------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------------------------------------------------
     def parameterenabling(self):
         i = self.dlg.Method_comboBox.currentIndex()
         print(i)
@@ -365,11 +361,12 @@ class RandomForestClassifier:
             self.dlg.LearningRate_Filed.setEnabled(True)
             self.dlg.Iteration_comboBox.setEnabled(True)
             self.dlg.HiddenLayer_comboBox.setEnabled(True)
-    #---------------------------------------------------------------------------------------------------------------
+
+    # ---------------------------------------------------------------------------------------------------------------
     def merge(self):
         input_path = self.dlg.input_img_box.filePath()
         # output_path = self.dlg.input_img_box_3.filePath()
-        output_path = 'C:/Users/HP/Desktop/Tile'            # Output location needs to be looked at
+        output_path = 'C:/Users/HP/Desktop/Tile'  # Output location needs to be looked at
         tiles = list()
         for tile in glob.glob(input_path + "/" + "*.tif"):
             tiles.append(tile)
@@ -379,8 +376,9 @@ class RandomForestClassifier:
                                       'OPTIONS': 'High Compression', 'EXTRA': 'None',
                                       'OUTPUT': str(output_path) + '/' + 'Merge' + '.tif'})
         print("All Done !!")
-    #------------------------------------RANDOM FOREST TRAIN---------------------------------------
-    
+
+    # ------------------------------------RANDOM FOREST TRAIN---------------------------------------
+
     def resampler(self, REF_IMG, IMG_LABEL):
 
         from osgeo import gdal, gdalconst
@@ -390,53 +388,73 @@ class RandomForestClassifier:
         # IMG_ADD = self.dlg.train_img_add.filePath()
         # IMG_LABEL_ADD = self.dlg.train_img_label.filePath()
 
-
         input1 = gdal.Open(IMG_LABEL, gdalconst.GA_ReadOnly)
         inputProj = input1.GetProjection()
         inputTrans = input1.GetGeoTransform()
 
-
         reference = gdal.Open(REF_IMG, gdalconst.GA_ReadOnly)
         referenceProj = reference.GetProjection()
         referenceTrans = reference.GetGeoTransform()
-        bandreference = reference.GetRasterBand(1)    
-        x = reference.RasterXSize 
+        bandreference = reference.GetRasterBand(1)
+        x = reference.RasterXSize
         y = reference.RasterYSize
 
-        RESAMPLED_IMG_LABEL = "Delhi_ROI_resampled2.tif" #Path to output file
-        driver= gdal.GetDriverByName('GTiff')
-        output = driver.Create(RESAMPLED_IMG_LABEL,x,y,1,bandreference.DataType)
+        RESAMPLED_IMG_LABEL = "Delhi_ROI_resampled2.tif"  # Path to output file
+        driver = gdal.GetDriverByName('GTiff')
+        output = driver.Create(RESAMPLED_IMG_LABEL, x, y, 1, bandreference.DataType)
         output.SetGeoTransform(referenceTrans)
         output.SetProjection(referenceProj)
 
-        gdal.ReprojectImage(input1,output,inputProj,referenceProj,gdalconst.GRA_Bilinear)
+        gdal.ReprojectImage(input1, output, inputProj, referenceProj, gdalconst.GRA_Bilinear)
 
         del output
 
         return RESAMPLED_IMG_LABEL
 
-        
-
-#------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------
     def rfc_train(self):
 
         from osgeo import gdal, gdal_array
         import numpy as np
 
-        from sklearn.model_selection import train_test_split
-        from sklearn.ensemble import RandomForestClassifier
-        from sklearn.metrics import confusion_matrix,classification_report
-        
+        try:
+            from sklearn.model_selection import train_test_split
+            from sklearn.ensemble import RandomForestClassifier
+            from sklearn.metrics import confusion_matrix, classification_report
+        except ImportError:
+            print("scikit-learn package not present\nInstalling...")
+            import pip
+            pip.main(["install", "--user", "scikit-learn"])
+
+            from sklearn.model_selection import train_test_split
+            from sklearn.ensemble import RandomForestClassifier
+            from sklearn.metrics import confusion_matrix, classification_report
+
+
         IMG_ADD = self.dlg.train_img_add.filePath()
         IMG_LABEL_ADD = self.dlg.train_img_label.filePath()
-        VALIDATION_SPLIT = 0.2                                  #TO BE TAKEN FROM USER (Train Val Ratio)
+
+        VALIDATION_SPLIT = self.dlg.train_valRatio.currentText()  # TO BE TAKEN FROM USER (Train Val Ratio)
+
+        if (not VALIDATION_SPLIT):
+            VALIDATION_SPLIT = 0.2
+        else:
+            VALIDATION_SPLIT = float(VALIDATION_SPLIT)
+
+        if (not IMG_ADD):
+            print("Enter Input")
+            QMessageBox.critical(self.dlg, 'No Input', 'Please select the image to be Trained.')
+            return
+        if (not IMG_LABEL_ADD):
+            print("Enter Input")
+            QMessageBox.critical(self.dlg, 'No Input', 'Please input the Label.')
+            return
 
         self.dlg.train_progressBar.setValue(20)
 
         RESAMPLED_IMG_LABEL1 = self.resampler(IMG_ADD, IMG_LABEL_ADD)
 
         self.dlg.train_progressBar.setValue(40)
-
 
         img_ds = gdal.Open(IMG_ADD, gdal.GA_ReadOnly)
 
@@ -463,14 +481,30 @@ class RandomForestClassifier:
         print(features.shape)
         print(labels.shape)
 
-        X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=VALIDATION_SPLIT, random_state=0)
+        X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=VALIDATION_SPLIT,
+                                                            random_state=0)
 
         print(X_train.shape)
         print(X_test.shape)
 
         self.dlg.train_progressBar.setValue(60)
 
-        rf = RandomForestClassifier(n_estimators=20, max_depth=None, n_jobs=-1, oob_score=True)   # n_estim = Trees, max_depth = Depth
+        num_trees = self.dlg.train_RFC_trees.value()
+        if (not num_trees):
+            num_trees = int(self.dlg.train_RFC_trees.defaultValue())
+        else:
+            num_trees = int(num_trees)
+
+        Depth = self.dlg.train_RFC_Depth.value()
+        if (not Depth):
+            Depth = None
+        else:
+            Depth = int(Depth)
+
+
+
+        rf = RandomForestClassifier(n_estimators=num_trees, max_depth=Depth, n_jobs=-1,
+                                    oob_score=True)  # n_estim = Trees, max_depth = Depth
 
         rf.fit(X_train, y_train)
 
@@ -482,9 +516,36 @@ class RandomForestClassifier:
 
         self.dlg.train_progressBar.setValue(100)
 
+    # -----------------------------------------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------------------------------------
+   # def vtor(self):
+    #    v_path = self.dlg.train_img_label.filePath()
+     #   vlayer = QgsVectorLayer(v_path, "Vector layer", "ogr")
+      #  if not vlayer.isValid():
+       #     print("Layer failed to load!")
+        #else:
+         #   QgsProject.instance().addMapLayer(vlayer)
+          #  print("Done")
+        #ext = vlayer.extent()
 
+        #xmin = ext.xMinimum()
+        #xmax = ext.xMaximum()
+        #ymin = ext.yMinimum()
+        #ymax = ext.yMaximum()
+        #print(xmin,' ',xmax,' ',ymax,' ',ymin)
+
+        #extent_list = str(xmin) + ',' + str(xmax) + ',' + str(ymin) + ',' + str(ymax) + '[]'
+
+
+
+
+        #processing.run("gdal:rasterize",
+         #              {'INPUT': v_path, 'FIELD':'elev', 'BURN': 0, 'UNITS': 0, 'WIDTH': 100,
+          #              'HEIGHT': 100, 'EXTENT': extent_list , 'NODATA': 0,
+           #             'OPTIONS': '', 'DATA_TYPE': 5, 'INIT': None, 'INVERT': False, 'EXTRA': '',
+            #            'OUTPUT': 'C:/Users/HP/Desktop/Tile/rast.tiff'})
+
+    #------------------------------------------------------------------------------------------------------------
     def run(self):
         """Run method that performs all the real work"""
 
@@ -493,49 +554,46 @@ class RandomForestClassifier:
         if self.first_start == True:
             self.first_start = False
             self.dlg = RandomForestClassifierDialog()
-        
+
         # show the dialog
         self.dlg.Tile_progressBar.setValue(0)
         self.dlg.train_progressBar.setValue(0)
         self.dlg.Clfr_progressBar.setValue(0)
         self.dlg.show()
 
-        #--------------------CLASSIFIER TAB----------------------------------------
+        # --------------------CLASSIFIER TAB----------------------------------------
 
-        #Stores entries from the input boxes
+        # Stores entries from the input boxes
         # IMG_ADD = self.dlg.input_img_box.filePath()
         # MODEL_ADD = self.dlg.input_img_box_2.filePath()
         # OUTPUT_ADD = self.dlg.input_img_box_3.filePath()
 
         # #Calls the classifier function after the button is pressed
-        
 
-        #self.dlg.testButton.clicked.connect(QMessageBox(self.iface.mainWindow(), 'Reverse Geocoding Error', 'Wrong Format!\nExiting...'))
-        #print(IMG_ADD)
-        
+        # self.dlg.testButton.clicked.connect(QMessageBox(self.iface.mainWindow(), 'Reverse Geocoding Error', 'Wrong Format!\nExiting...'))
+        # print(IMG_ADD)
+
         self.dlg.RunClassifier_Button.clicked.connect(self.randomForest)
-        #self.dlg.RunClassifier_Button.clicked.connect(self.merge)
-        #--------------------Tiles Generation TAB----------------------------------------------
-        
-        #Stores entries from the input boxes
-        #tr_IMG_ADD = self.dlg.ImageInput_Field.filePath()
+        # self.dlg.RunClassifier_Button.clicked.connect(self.merge)
+        # --------------------Tiles Generation TAB----------------------------------------------
 
-        #Calls the function to split image after the button is pressed
+        # Stores entries from the input boxes
+        # tr_IMG_ADD = self.dlg.ImageInput_Field.filePath()
+
+        # Calls the function to split image after the button is pressed
         self.dlg.Tiles_Button.clicked.connect(self.tiles)
 
+        # ---------------------- Train TAB (NN based)-------------------------------------------------
 
-        #---------------------- Train TAB (NN based)-------------------------------------------------
-
-        #for enabeling parameter input widgets
+        # for enabeling parameter input widgets
         self.dlg.Method_comboBox.activated.connect(self.parameterenabling)
+        self.dlg.Train_Button.clicked.connect(self.vtor)
 
-
-        #----------------------------Train TAB-------------------------------------------------------
+        # ----------------------------Train TAB-------------------------------------------------------
 
         self.dlg.train_button.clicked.connect(self.rfc_train)
 
-
-        #--------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------
 
         # Run the dialog event loop
         result = self.dlg.exec_()

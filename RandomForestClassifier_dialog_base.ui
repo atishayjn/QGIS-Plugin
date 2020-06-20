@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -275,7 +275,7 @@
         <string>Methods</string>
        </property>
       </widget>
-      <widget class="QComboBox" name="Ratio_comboBox">
+      <widget class="QComboBox" name="vRatio_comboBox">
        <property name="geometry">
         <rect>
          <x>210</x>
