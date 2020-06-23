@@ -204,9 +204,179 @@ class RandomForestClassifier:
     #     outband.FlushCache()
 
 
+#------------------------------------------------TOOLS-----------------------------------------------------------
+    
+    def vector2raster(self, v_path):
+        #v_path = self.dlg.Train_img_label.filePath()
+        print(v_path)
+
+        vlayer = QgsVectorLayer(v_path, "Vector layer", "ogr")
+        if not vlayer.isValid():
+            print("Layer failed to load!")
+        else:
+            QgsProject.instance().addMapLayer(vlayer)
+            print("Done")
+            
+        ext = vlayer.extent()
+        #for feature in layer.getFeatures():
+        #   ext = feature.geometry().boundingBox()  # this line is the relevant part
+        xmin = ext.xMinimum()
+        xmax = ext.xMaximum()
+        ymin = ext.yMinimum()
+        ymax = ext.yMaximum()
+        print(xmin,' ',xmax,' ',ymax,' ',ymin)
+
+        extent_list = str(xmin) + ',' + str(xmax) + ',' + str(ymin) + ',' + str(ymax) + '[]'
+
+        if not os.path.exists('QGIS_Temp'):
+            os.makedirs('QGIS_Temp')
+
+        r_path = 'QGIS_Temp/V2R_converted_temp.tif'
+
+        processing.run("gdal:rasterize",
+                       {'INPUT': v_path, 'FIELD':'id', 'UNITS': 1, 'WIDTH': 0.001,
+                        'HEIGHT': 0.001, 'EXTENT': extent_list , 'NODATA': 0,
+                        'OPTIONS': '', 'DATA_TYPE': 5, 'INIT': None, 'INVERT': False, 'EXTRA': '',
+                        'OUTPUT': r_path})
+
+        return r_path
+
+    def resampler(self, REF_IMG, IMG_LABEL):
+
+        from osgeo import gdal, gdalconst
+
+        self.dlg.train_progressBar.setValue(5)
+
+        # IMG_ADD = self.dlg.train_img_add.filePath()
+        # IMG_LABEL_ADD = self.dlg.train_img_label.filePath()
+
+
+        input1 = gdal.Open(IMG_LABEL, gdalconst.GA_ReadOnly)
+        inputProj = input1.GetProjection()
+        inputTrans = input1.GetGeoTransform()
+
+
+        reference = gdal.Open(REF_IMG, gdalconst.GA_ReadOnly)
+        referenceProj = reference.GetProjection()
+        referenceTrans = reference.GetGeoTransform()
+        bandreference = reference.GetRasterBand(1)    
+        x = reference.RasterXSize 
+        y = reference.RasterYSize
+
+        RESAMPLED_IMG_LABEL = "Delhi_ROI_resampled2.tif" #Path to output file
+        driver= gdal.GetDriverByName('GTiff')
+        output = driver.Create(RESAMPLED_IMG_LABEL,x,y,1,bandreference.DataType)
+        output.SetGeoTransform(referenceTrans)
+        output.SetProjection(referenceProj)
+
+        gdal.ReprojectImage(input1,output,inputProj,referenceProj,gdalconst.GRA_Bilinear)
+
+        del output
+
+        return RESAMPLED_IMG_LABEL
+
+#-------------------------------------------TILES GENERATOR-------------------------------------------------
+    def tiles(self):
+
+        in_path = self.dlg.Tiles_Input.filePath()
+        
+        if(not in_path):
+            print("Enter Input")
+            QMessageBox.critical(self.dlg, 'No Input', 'Please select the image to be splitted.')
+            return
+
+        # in_path = 'C:/forest.tif'         
+        out_path = 'C:/Users/Atishay/Desktop/Images/'
+        file_name = 'Tile'
+        
+        if not os.path.exists(out_path):
+            os.makedirs(out_path)
+             
+        tile_size_x = self.dlg.TileSizeX.value()
+        tile_size_y = self.dlg.TileSizeY.value()
+             
+        if(not tile_size_x):
+            tile_size_x = int(self.dlg.TileSizeX.defaultValue())
+        else:
+           tile_size_x = int(tile_size_x)
+           
+        if(not tile_size_y):
+            tile_size_y = int(self.dlg.TileSizeX.defaultValue())
+        else:
+           tile_size_y = int(tile_size_y)
+
+
+        ds = gdal.Open(in_path)
+
+        complete = 0
+        self.dlg.Tile_progressBar.setValue(complete)
+
+        CREATE_NO_WINDOW = 0x08000000
+
+        #for i in range(5):
+        band = ds.GetRasterBand(1)
+        xsize = band.XSize
+        ysize = band.YSize
+                 
+        for i in range(0, xsize, tile_size_x):
+            for j in range(0, ysize, tile_size_y):
+                com_string = "gdal_translate -of GTIFF -srcwin " + str(i)+ ", " + str(j) + ", " + str(tile_size_x) + ", " + str(tile_size_y) + " " + str(in_path) + " " + str(out_path) + str(file_name)  + str(i) + "_" + str(j) + ".tif"
+                subprocess.call(com_string, creationflags=CREATE_NO_WINDOW)
+                complete = complete + 20
+                self.dlg.Tile_progressBar.setValue(complete)
+
+
+        label_path_v = self.dlg.Tiles_Input_2.filePath()
+        label_path_r = self.vector2raster(label_path_v)
+        label_path = self.resampler(in_path, label_path_r)
+
+        out_path = 'C:/Users/Atishay/Desktop/Label/'
+        file_name = 'Tile'
+        
+        if not os.path.exists(out_path):
+            os.makedirs(out_path)
+             
+        tile_size_x = self.dlg.TileSizeX.value()
+        tile_size_y = self.dlg.TileSizeY.value()
+             
+        if(not tile_size_x):
+            tile_size_x = int(self.dlg.TileSizeX.defaultValue())
+        else:
+           tile_size_x = int(tile_size_x)
+           
+        if(not tile_size_y):
+            tile_size_y = int(self.dlg.TileSizeX.defaultValue())
+        else:
+           tile_size_y = int(tile_size_y)
+
+
+        ds = gdal.Open(label_path)
+
+        complete = 0
+        self.dlg.Tile_progressBar.setValue(complete)
+
+        CREATE_NO_WINDOW = 0x08000000
+
+        #for i in range(5):
+        band = ds.GetRasterBand(1)
+        xsize = band.XSize
+        ysize = band.YSize
+                 
+        for i in range(0, xsize, tile_size_x):
+            for j in range(0, ysize, tile_size_y):
+                com_string = "gdal_translate -of GTIFF -srcwin " + str(i)+ ", " + str(j) + ", " + str(tile_size_x) + ", " + str(tile_size_y) + " " + str(label_path) + " " + str(out_path) + str(file_name)  + str(i) + "_" + str(j) + ".tif"
+                subprocess.call(com_string, creationflags=CREATE_NO_WINDOW)
+                complete = complete + 20
+                self.dlg.Tile_progressBar.setValue(complete)
+
+#-------------------------------------------CLASSIFIERS---------------------------------------------------------
+
     def randomForest(self):
     #import statements
     
+        from osgeo import gdal, gdal_array
+        import numpy as np
+
         try:
             from sklearn.model_selection import train_test_split
             from sklearn.ensemble import RandomForestClassifier
@@ -221,35 +391,12 @@ class RandomForestClassifier:
             from sklearn.metrics import confusion_matrix,classification_report
 
         try:
-            from osgeo import gdal, gdal_array
-        except ImportError:
-            print("GDAL package not present\nInstalling...")
-            import pip
-            pip.main(["install", "--user", "GDAL"])
-            from osgeo import gdal, gdal_array
-
-        try:
             import pickle
         except ImportError:
             import pip
             pip.main(["install", "--user", "pickle"])
             import pickle
 
-
-        try:
-            import numpy as np
-        except ImportError:
-            import pip
-            pip.main(["install", "--user", "numpy"])
-            import numpy as np
-
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError:
-            import pip
-            pip.main(["install", "--user", "matplotlib"])
-
-            import matplotlib.pyplot as plt
 
         self.dlg.Clfr_progressBar.setValue(30)
             
@@ -288,6 +435,9 @@ class RandomForestClassifier:
         proj = img_ds.GetProjection()
 
         fname = 'Delhi_classified.tif'
+
+        #fname = self.dlg.input_img_box_3.filePath()
+        
         #self.array2raster(fname, geotrans, proj, class_prediction)
 
         #To convert array to raster
@@ -303,34 +453,56 @@ class RandomForestClassifier:
 
         self.dlg.Clfr_progressBar.setValue(100)
 
-    #-------------------------------------------UNET CLASSIFIER-------------------------------------------------
-
     def UNET_Classifier(self):
-        import tensorflow as tf
+        
         import gdal
-
-        from keras.models import Model, load_model, model_from_json
-        from keras.preprocessing.image import img_to_array, load_img
-        from skimage.transform import resize
         import numpy as np
         import matplotlib.pyplot as plt
+
+        try:
+            import tensorflow as tf
+            from keras.models import Model, load_model, model_from_json
+            from keras.preprocessing.image import img_to_array, load_img
+
+        except ImportError:
+            print("tensorflow not present\nInstalling...")
+            import pip
+            pip.main(["install", "--user", "tensorflow"])
+
+            import tensorflow as tf
+            from keras.models import Model, load_model, model_from_json
+            from keras.preprocessing.image import img_to_array, load_img
+
+        try:
+            from skimage.transform import resize
+
+        except ImportError:
+            print("scikit-image package not present\nInstalling...")
+            import pip
+            pip.main(["install", "--user", "scikit-image"])
+
+            from skimage.transform import resize
 
         self.dlg.Clfr_progressBar.setValue(30)
 
         THRESHOLD = 0.5
 
-        with open('C:\\model_unet.json', 'r') as json_file:
-            loaded_nnet = json_file.read()
+        IMG_ADD = self.dlg.input_img_box.filePath()
+        MODEL_ADD = self.dlg.input_img_box_2.filePath()
+        H5_ADD = self.dlg.input_img_box_6.filePath()
 
-        save_model = tf.keras.models.model_from_json(loaded_nnet)
-        save_model.load_weights('C:\\model_unet.h5')
-
-        self.dlg.Clfr_progressBar.setValue(50)
-
-        img = load_img('C:\\10078690_15.tiff')
+        img = load_img(IMG_ADD)
         x_img = img_to_array(img)
         x_img = resize(x_img, (512, 512), mode = 'constant', preserve_range = True)
         x_img.shape
+
+        self.dlg.Clfr_progressBar.setValue(50)
+
+        with open(MODEL_ADD, 'r') as json_file:
+            loaded_nnet = json_file.read()
+
+        save_model = tf.keras.models.model_from_json(loaded_nnet)
+        save_model.load_weights(H5_ADD)
 
         self.dlg.Clfr_progressBar.setValue(70)
 
@@ -345,166 +517,62 @@ class RandomForestClassifier:
 
         self.dlg.Clfr_progressBar.setValue(100)
 
-#------------------------------------------------------------------------------------------
-
-    def tiles(self):
-
-        in_path = self.dlg.Tiles_Input.filePath()
-        print(in_path)
-
-        if(not in_path):
-            print("Enter Input")
-            QMessageBox.critical(self.dlg, 'No Input', 'Please select the image to be splitted.')
-            return
-
-        # in_path = 'C:/forest.tif'         
-        out_path = 'C:/Users/Atishay/Desktop/Tile'
-             
-        tile_size_x = self.dlg.TileSizeX.value()
-        tile_size_y = self.dlg.TileSizeY.value()
-             
-        if(not tile_size_x):
-            tile_size_x = int(self.dlg.TileSizeX.defaultValue())
-        else:
-           tile_size_x = int(tile_size_x)
-           
-        if(not tile_size_y):
-            tile_size_y = int(self.dlg.TileSizeX.defaultValue())
-        else:
-           tile_size_y = int(tile_size_y)
-
-
-        ds = gdal.Open(in_path)
-
-        complete = 0
-        self.dlg.Tile_progressBar.setValue(complete)
-
-        CREATE_NO_WINDOW = 0x08000000
-
-        #for i in range(5):
-        band = ds.GetRasterBand(1)
-        xsize = band.XSize
-        ysize = band.YSize
-                 
-        for i in range(0, xsize, tile_size_x):
-            for j in range(0, ysize, tile_size_y):
-                com_string = "gdal_translate -of GTIFF -srcwin " + str(i)+ ", " + str(j) + ", " + str(tile_size_x) + ", " + str(tile_size_y) + " " + str(in_path) + " " + str(out_path) + str(i) + "_" + str(j) + ".tif"
-                subprocess.call(com_string, creationflags=CREATE_NO_WINDOW)
-                complete = complete + 20
-                self.dlg.Tile_progressBar.setValue(complete)
-
-
-    #--------------------------------------------------------------------------------------------------------------------
-    def parameterenabling(self):
-        i = self.dlg.Method_comboBox.currentIndex()
-        print(i)
-        if i == 0:
-            self.dlg.LearningRate_Filed.setEnabled(True)
-            self.dlg.Iteration_comboBox.setEnabled(True)
-            #self.dlg.HiddenLayer_comboBox.setEnabled(True)
-        if i == 1:
-            self.dlg.LearningRate_Filed.setEnabled(False)
-            self.dlg.Iteration_comboBox.setEnabled(False)
-            #self.dlg.HiddenLayer_comboBox.setEnabled(True)
-        if i == 2:
-            self.dlg.LearningRate_Filed.setEnabled(True)
-            self.dlg.Iteration_comboBox.setEnabled(True)
-            #self.dlg.HiddenLayer_comboBox.setEnabled(True)
-
-    def parameterenabling1(self):
-        i = self.dlg.Classifier_comboBox.currentIndex()
-        print(i)
-        if i == 0:
-            self.dlg.input_img_box_6.setEnabled(True)
-
-        if i == 1:
-            self.dlg.input_img_box_6.setEnabled(False)
-
-        return i
-
-    def Run_Classifier(self):
-        i = self.dlg.Classifier_comboBox.currentIndex()
-        print(i)
-        if i == 0:
-            self.UNET_Classifier()
-
-        if i == 1:
-            self.print_check()
-            #self.randomForest()
-        
-    #---------------------------------------------------------------------------------------------------------------
-    
-    def print_check(self):
-        print("check")
-
-    def merge(self):
-        input_path = self.dlg.input_img_box.filePath()
-        # output_path = self.dlg.input_img_box_3.filePath()
-        output_path = 'C:/Users/HP/Desktop/Tile'            # Output location needs to be looked at
-        tiles = list()
-        for tile in glob.glob(input_path + "/" + "*.tif"):
-            tiles.append(tile)
-
-        processing.run("gdal:merge", {'INPUT': tiles, 'PCT': 'False',
-                                      'SEPERATE': 'False', 'DATA_TYPE': 1, 'NODATA_INPUT': None, 'NODATA_OUTPUT': None,
-                                      'OPTIONS': 'High Compression', 'EXTRA': 'None',
-                                      'OUTPUT': str(output_path) + '/' + 'Merge' + '.tif'})
-        print("All Done !!")
-    #------------------------------------RANDOM FOREST TRAIN---------------------------------------
-    
-    def resampler(self, REF_IMG, IMG_LABEL):
-
-        from osgeo import gdal, gdalconst
-
-        self.dlg.train_progressBar.setValue(5)
-
-        # IMG_ADD = self.dlg.train_img_add.filePath()
-        # IMG_LABEL_ADD = self.dlg.train_img_label.filePath()
-
-
-        input1 = gdal.Open(IMG_LABEL, gdalconst.GA_ReadOnly)
-        inputProj = input1.GetProjection()
-        inputTrans = input1.GetGeoTransform()
-
-
-        reference = gdal.Open(REF_IMG, gdalconst.GA_ReadOnly)
-        referenceProj = reference.GetProjection()
-        referenceTrans = reference.GetGeoTransform()
-        bandreference = reference.GetRasterBand(1)    
-        x = reference.RasterXSize 
-        y = reference.RasterYSize
-
-        RESAMPLED_IMG_LABEL = "Delhi_ROI_resampled2.tif" #Path to output file
-        driver= gdal.GetDriverByName('GTiff')
-        output = driver.Create(RESAMPLED_IMG_LABEL,x,y,1,bandreference.DataType)
-        output.SetGeoTransform(referenceTrans)
-        output.SetProjection(referenceProj)
-
-        gdal.ReprojectImage(input1,output,inputProj,referenceProj,gdalconst.GRA_Bilinear)
-
-        del output
-
-        return RESAMPLED_IMG_LABEL
-
-        
-
-#------------------------------------------------------------------------------------
+#-------------------------------------------TRAIN---------------------------------------------------------
     def rfc_train(self):
 
         from osgeo import gdal, gdal_array
         import numpy as np
+        import pickle
 
-        from sklearn.model_selection import train_test_split
-        from sklearn.ensemble import RandomForestClassifier
-        from sklearn.metrics import confusion_matrix,classification_report
+        try:
+            from sklearn.model_selection import train_test_split
+            from sklearn.ensemble import RandomForestClassifier
+            from sklearn.metrics import confusion_matrix, classification_report
+        except ImportError:
+            print("scikit-learn package not present\nInstalling...")
+            import pip
+            pip.main(["install", "--user", "scikit-learn"])
+
+            from sklearn.model_selection import train_test_split
+            from sklearn.ensemble import RandomForestClassifier
+            from sklearn.metrics import confusion_matrix, classification_report
+        
+        self.dlg.train_progressBar.setValue(20)
         
         IMG_ADD = self.dlg.train_img_add.filePath()
-        IMG_LABEL_ADD = self.dlg.train_img_label.filePath()
-        VALIDATION_SPLIT = 0.2                                  #TO BE TAKEN FROM USER (Train Val Ratio)
+        IMG_VLABEL_ADD = self.dlg.train_img_label.filePath()
 
-        self.dlg.train_progressBar.setValue(20)
-
+        IMG_LABEL_ADD = self.vector2raster(IMG_VLABEL_ADD)
         RESAMPLED_IMG_LABEL1 = self.resampler(IMG_ADD, IMG_LABEL_ADD)
+        
+        VALIDATION_SPLIT = self.dlg.train_valRatio.currentText()  # TO BE TAKEN FROM USER (Train Val Ratio)
+
+        if (not VALIDATION_SPLIT):
+            VALIDATION_SPLIT = 0.2
+        else:
+            VALIDATION_SPLIT = float(VALIDATION_SPLIT)
+
+        if (not IMG_ADD):
+            print("Enter Input")
+            QMessageBox.critical(self.dlg, 'No Input', 'Please select the image to be Trained.')
+            return
+        if (not IMG_LABEL_ADD):
+            print("Enter Input")
+            QMessageBox.critical(self.dlg, 'No Input', 'Please input the Label.')
+            return
+
+        num_trees = self.dlg.train_RFC_trees.value()
+        if (not num_trees):
+            num_trees = int(self.dlg.train_RFC_trees.defaultValue())
+        else:
+            num_trees = int(num_trees)
+
+        Depth = self.dlg.train_RFC_Depth.value()
+        if (not Depth):
+            Depth = None
+        else:
+            Depth = int(Depth)
+
 
         self.dlg.train_progressBar.setValue(40)
 
@@ -541,59 +609,78 @@ class RandomForestClassifier:
 
         self.dlg.train_progressBar.setValue(60)
 
-        rf = RandomForestClassifier(n_estimators=20, max_depth=None, n_jobs=-1, oob_score=True)   # n_estim = Trees, max_depth = Depth
+
+        rf = RandomForestClassifier(n_estimators=num_trees, max_depth=None, n_jobs=-1,
+                                    oob_score=True)  # n_estim = Trees, max_depth = Depth
 
         rf.fit(X_train, y_train)
 
         self.dlg.train_progressBar.setValue(80)
 
-        import pickle
+        
         filename = 'model_5band_plugged.sav'
         pickle.dump(rf, open(filename, 'wb'))
 
         self.dlg.train_progressBar.setValue(100)
 
-    # -----------------------------------------------------------------------------------------------------------
+#-------------------------------------------WORKFLOW---------------------------------------------------------
+    def parameterenabling(self):
+        i = self.dlg.Method_comboBox.currentIndex()
+        print(i)
+        if i == 0:
+            self.dlg.LearningRate_Filed.setEnabled(True)
+            self.dlg.Iteration_comboBox.setEnabled(True)
+            #self.dlg.HiddenLayer_comboBox.setEnabled(True)
+        if i == 1:
+            self.dlg.LearningRate_Filed.setEnabled(False)
+            self.dlg.Iteration_comboBox.setEnabled(False)
+            #self.dlg.HiddenLayer_comboBox.setEnabled(True)
+        if i == 2:
+            self.dlg.LearningRate_Filed.setEnabled(True)
+            self.dlg.Iteration_comboBox.setEnabled(True)
+            #self.dlg.HiddenLayer_comboBox.setEnabled(True)
 
-    def vector2raster(self):
-        v_path = self.dlg.Train_img_label.filePath()
-        print(v_path)
+    def parameterenabling1(self):
+        i = self.dlg.Classifier_comboBox.currentIndex()
+        print(i)
+        if i == 0:
+            self.dlg.input_img_box_6.setEnabled(True)
 
-        vlayer = QgsVectorLayer(v_path, "Vector layer", "ogr")
-        if not vlayer.isValid():
-            print("Layer failed to load!")
-        else:
-            QgsProject.instance().addMapLayer(vlayer)
-            print("Done")
-            
-        ext = vlayer.extent()
-        #for feature in layer.getFeatures():
-        #   ext = feature.geometry().boundingBox()  # this line is the relevant part
-        xmin = ext.xMinimum()
-        xmax = ext.xMaximum()
-        ymin = ext.yMinimum()
-        ymax = ext.yMaximum()
-        print(xmin,' ',xmax,' ',ymax,' ',ymin)
+        if i == 1:
+            self.dlg.input_img_box_6.setEnabled(False)
 
-        extent_list = str(xmin) + ',' + str(xmax) + ',' + str(ymin) + ',' + str(ymax) + '[]'
+        return i
 
+    def Run_Classifier(self):
+        i = self.dlg.Classifier_comboBox.currentIndex()
+        print(i)
+        if i == 0:
+            self.UNET_Classifier()
 
-        r_path = 'C:/Users/Atishay/Desktop/V2R_converted.tif'
+        if i == 1:
+            #self.print_check()
+            self.randomForest()
+        
+#---------------------------------------------------------------------------------------------------------------
+    
+    def print_check(self):
+        print("check")
 
-        processing.run("gdal:rasterize",
-                       {'INPUT': v_path, 'FIELD':'elev', 'BURN': 0, 'UNITS': 0, 'WIDTH': 100,
-                        'HEIGHT': 100, 'EXTENT': extent_list , 'NODATA': 0,
-                        'OPTIONS': '', 'DATA_TYPE': 5, 'INIT': None, 'INVERT': False, 'EXTRA': '',
-                        'OUTPUT': r_path})
+    def merge_tiles(self):
+        input_path = self.dlg.input_img_box.filePath()
+        # output_path = self.dlg.input_img_box_3.filePath()
+        output_path = 'C:/Users/HP/Desktop/Tile'            # Output location needs to be looked at
+        tiles = list()
+        for tile in glob.glob(input_path + "/" + "*.tif"):
+            tiles.append(tile)
 
-        # gdal_rasterize -l Delhi_Vector -a id -tr 0.001 0.0001 -a_nodata 0.0 -te 779310.1849416522 
-        # 3226505.6215218734 801344.8955852459 3238442.793150685 -Float32 -of GTiff C:/Users/Atishay/Documents/Delhi_Vector.shp 
-        # C:/Users/Atishay/Desktop/V2R_converted.tif
+        processing.run("gdal:merge", {'INPUT': tiles, 'PCT': 'False',
+                                      'SEPERATE': 'False', 'DATA_TYPE': 1, 'NODATA_INPUT': None, 'NODATA_OUTPUT': None,
+                                      'OPTIONS': 'High Compression', 'EXTRA': 'None',
+                                      'OUTPUT': str(output_path) + '/' + 'Merge' + '.tif'})
+        print("All Done !!")
 
-        #return r_path
-
-
-#-----------------------------------------------------------------------------------------------------------
+#--------------------------------------------DIALOG BOX------------------------------------------------------
 
     def run(self):
         """Run method that performs all the real work"""
@@ -604,10 +691,18 @@ class RandomForestClassifier:
             self.first_start = False
             self.dlg = RandomForestClassifierDialog()
         
-        # show the dialog
+        #Progress bar
         self.dlg.Tile_progressBar.setValue(0)
         self.dlg.train_progressBar.setValue(0)
         self.dlg.Clfr_progressBar.setValue(0)
+
+        #Temporary
+        self.dlg.input_img_box_3.setEnabled(False)
+        self.dlg.train_output.setEnabled(False)
+        self.dlg.Output_Field_2.setEnabled(False)
+        self.dlg.Tiles_Output.setEnabled(False)
+
+        # show the dialog
         self.dlg.show()
 
     #----------------------------CLASSIFIER TAB----------------------------------------
