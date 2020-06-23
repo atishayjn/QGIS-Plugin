@@ -24,6 +24,7 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QMessageBox
+from qgis.core import QgsVectorLayer, QgsProject
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -285,6 +286,7 @@ class RandomForestClassifier:
 
         geotrans = img_ds.GetGeoTransform()
         proj = img_ds.GetProjection()
+
         fname = 'Delhi_classified.tif'
         #self.array2raster(fname, geotrans, proj, class_prediction)
 
@@ -300,6 +302,49 @@ class RandomForestClassifier:
         outband.FlushCache()
 
         self.dlg.Clfr_progressBar.setValue(100)
+
+    #-------------------------------------------UNET CLASSIFIER-------------------------------------------------
+
+    def UNET_Classifier(self):
+        import tensorflow as tf
+        import gdal
+
+        from keras.models import Model, load_model, model_from_json
+        from keras.preprocessing.image import img_to_array, load_img
+        from skimage.transform import resize
+        import numpy as np
+        import matplotlib.pyplot as plt
+
+        self.dlg.Clfr_progressBar.setValue(30)
+
+        THRESHOLD = 0.5
+
+        with open('C:\\model_unet.json', 'r') as json_file:
+            loaded_nnet = json_file.read()
+
+        save_model = tf.keras.models.model_from_json(loaded_nnet)
+        save_model.load_weights('C:\\model_unet.h5')
+
+        self.dlg.Clfr_progressBar.setValue(50)
+
+        img = load_img('C:\\10078690_15.tiff')
+        x_img = img_to_array(img)
+        x_img = resize(x_img, (512, 512), mode = 'constant', preserve_range = True)
+        x_img.shape
+
+        self.dlg.Clfr_progressBar.setValue(70)
+
+        pred = save_model.predict(np.expand_dims(x_img, axis=0), verbose=1)[0, :, :, 0] # [ : : ] to squeeze the image dimension equiv to pred[0].squeeze()
+
+        pred_bin = np.where(pred > THRESHOLD, 1, 0)
+
+        self.dlg.Clfr_progressBar.setValue(90)
+
+        plt.imshow(pred_bin)
+        plt.show()
+
+        self.dlg.Clfr_progressBar.setValue(100)
+
 #------------------------------------------------------------------------------------------
 
     def tiles(self):
@@ -313,7 +358,7 @@ class RandomForestClassifier:
             return
 
         # in_path = 'C:/forest.tif'         
-        out_path = 'C:/Users/HP/Desktop/Tile'
+        out_path = 'C:/Users/Atishay/Desktop/Tile'
              
         tile_size_x = self.dlg.TileSizeX.value()
         tile_size_y = self.dlg.TileSizeY.value()
@@ -356,16 +401,42 @@ class RandomForestClassifier:
         if i == 0:
             self.dlg.LearningRate_Filed.setEnabled(True)
             self.dlg.Iteration_comboBox.setEnabled(True)
-            self.dlg.HiddenLayer_comboBox.setEnabled(True)
+            #self.dlg.HiddenLayer_comboBox.setEnabled(True)
         if i == 1:
-            self.dlg.LearningRate_Filed.setEnabled(True)
-            self.dlg.Iteration_comboBox.setEnabled(True)
-            self.dlg.HiddenLayer_comboBox.setEnabled(True)
+            self.dlg.LearningRate_Filed.setEnabled(False)
+            self.dlg.Iteration_comboBox.setEnabled(False)
+            #self.dlg.HiddenLayer_comboBox.setEnabled(True)
         if i == 2:
             self.dlg.LearningRate_Filed.setEnabled(True)
             self.dlg.Iteration_comboBox.setEnabled(True)
-            self.dlg.HiddenLayer_comboBox.setEnabled(True)
+            #self.dlg.HiddenLayer_comboBox.setEnabled(True)
+
+    def parameterenabling1(self):
+        i = self.dlg.Classifier_comboBox.currentIndex()
+        print(i)
+        if i == 0:
+            self.dlg.input_img_box_6.setEnabled(True)
+
+        if i == 1:
+            self.dlg.input_img_box_6.setEnabled(False)
+
+        return i
+
+    def Run_Classifier(self):
+        i = self.dlg.Classifier_comboBox.currentIndex()
+        print(i)
+        if i == 0:
+            self.UNET_Classifier()
+
+        if i == 1:
+            self.print_check()
+            #self.randomForest()
+        
     #---------------------------------------------------------------------------------------------------------------
+    
+    def print_check(self):
+        print("check")
+
     def merge(self):
         input_path = self.dlg.input_img_box.filePath()
         # output_path = self.dlg.input_img_box_3.filePath()
@@ -482,6 +553,45 @@ class RandomForestClassifier:
 
         self.dlg.train_progressBar.setValue(100)
 
+    # -----------------------------------------------------------------------------------------------------------
+
+    def vector2raster(self):
+        v_path = self.dlg.Train_img_label.filePath()
+        print(v_path)
+
+        vlayer = QgsVectorLayer(v_path, "Vector layer", "ogr")
+        if not vlayer.isValid():
+            print("Layer failed to load!")
+        else:
+            QgsProject.instance().addMapLayer(vlayer)
+            print("Done")
+            
+        ext = vlayer.extent()
+        #for feature in layer.getFeatures():
+        #   ext = feature.geometry().boundingBox()  # this line is the relevant part
+        xmin = ext.xMinimum()
+        xmax = ext.xMaximum()
+        ymin = ext.yMinimum()
+        ymax = ext.yMaximum()
+        print(xmin,' ',xmax,' ',ymax,' ',ymin)
+
+        extent_list = str(xmin) + ',' + str(xmax) + ',' + str(ymin) + ',' + str(ymax) + '[]'
+
+
+        r_path = 'C:/Users/Atishay/Desktop/V2R_converted.tif'
+
+        processing.run("gdal:rasterize",
+                       {'INPUT': v_path, 'FIELD':'elev', 'BURN': 0, 'UNITS': 0, 'WIDTH': 100,
+                        'HEIGHT': 100, 'EXTENT': extent_list , 'NODATA': 0,
+                        'OPTIONS': '', 'DATA_TYPE': 5, 'INIT': None, 'INVERT': False, 'EXTRA': '',
+                        'OUTPUT': r_path})
+
+        # gdal_rasterize -l Delhi_Vector -a id -tr 0.001 0.0001 -a_nodata 0.0 -te 779310.1849416522 
+        # 3226505.6215218734 801344.8955852459 3238442.793150685 -Float32 -of GTiff C:/Users/Atishay/Documents/Delhi_Vector.shp 
+        # C:/Users/Atishay/Desktop/V2R_converted.tif
+
+        #return r_path
+
 
 #-----------------------------------------------------------------------------------------------------------
 
@@ -500,22 +610,16 @@ class RandomForestClassifier:
         self.dlg.Clfr_progressBar.setValue(0)
         self.dlg.show()
 
-        #--------------------CLASSIFIER TAB----------------------------------------
-
-        #Stores entries from the input boxes
-        # IMG_ADD = self.dlg.input_img_box.filePath()
-        # MODEL_ADD = self.dlg.input_img_box_2.filePath()
-        # OUTPUT_ADD = self.dlg.input_img_box_3.filePath()
-
-        # #Calls the classifier function after the button is pressed
-        
+    #----------------------------CLASSIFIER TAB----------------------------------------
 
         #self.dlg.testButton.clicked.connect(QMessageBox(self.iface.mainWindow(), 'Reverse Geocoding Error', 'Wrong Format!\nExiting...'))
         #print(IMG_ADD)
         
-        self.dlg.RunClassifier_Button.clicked.connect(self.randomForest)
+        self.dlg.Classifier_comboBox.activated.connect(self.parameterenabling1)
+        self.dlg.RunClassifier_Button.clicked.connect(self.Run_Classifier)
+
         #self.dlg.RunClassifier_Button.clicked.connect(self.merge)
-        #--------------------Tiles Generation TAB----------------------------------------------
+    #--------------------Tiles Generation TAB----------------------------------------------
         
         #Stores entries from the input boxes
         #tr_IMG_ADD = self.dlg.ImageInput_Field.filePath()
@@ -524,18 +628,18 @@ class RandomForestClassifier:
         self.dlg.Tiles_Button.clicked.connect(self.tiles)
 
 
-        #---------------------- Train TAB (NN based)-------------------------------------------------
+    #---------------------- Train TAB (NN based)-------------------------------------------------
 
         #for enabeling parameter input widgets
         self.dlg.Method_comboBox.activated.connect(self.parameterenabling)
+        self.dlg.Train_Button.clicked.connect(self.vector2raster)
 
-
-        #----------------------------Train TAB-------------------------------------------------------
+    #----------------------------Train TAB-------------------------------------------------------
 
         self.dlg.train_button.clicked.connect(self.rfc_train)
 
 
-        #--------------------------------------------------------------------------------------------
+    #--------------------------------------------------------------------------------------------
 
         # Run the dialog event loop
         result = self.dlg.exec_()
