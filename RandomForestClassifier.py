@@ -34,7 +34,7 @@ import gdal
 import os
 import subprocess
 import os.path
-import processing
+import processing, sys
 import glob
 
 class RandomForestClassifier:
@@ -623,6 +623,328 @@ class RandomForestClassifier:
 
         self.dlg.train_progressBar.setValue(100)
 
+    def UNET_build(self):
+
+        #imports-----------------------------------------------------------
+        import tensorflow as tf
+        import tensorflow.keras.backend as K
+        from tensorflow.keras.layers import (Dropout,
+                                             Conv2D,
+                                             MaxPooling2D,
+                                             Conv2DTranspose,
+                                             concatenate,
+                                             BatchNormalization,
+                                             Activation,
+                                             Conv2DTranspose,
+                                             Add)
+        from tensorflow.keras import Input
+        from tensorflow.keras.callbacks import (EarlyStopping,
+                                                ModelCheckpoint,
+                                                ReduceLROnPlateau)
+        from tensorflow.keras.preprocessing.image import (ImageDataGenerator,
+                                               array_to_img,
+                                               img_to_array,
+                                               load_img)
+
+        from skimage.transform import resize
+
+        #Model Parameters[From Input Fields]--------------------------------------------------
+
+        # Number of bands in input image
+        #N_CHANNELS = 3
+
+        N_CHANNELS = self.dlg.Build_bands.value()
+        if (not N_CHANNELS):
+            N_CHANNELS = int(self.dlg.Build_bands.defaultValue())
+        else:
+            N_CHANNELS = int(N_CHANNELS)
+
+
+
+        # Number of classes to be classified
+        #N_CLASSES = 1
+
+        N_CLASSES = self.dlg.Build_classes.value()
+        if (not N_CLASSES):
+            N_CLASSES = int(self.dlg.Build_classes.defaultValue())
+        else:
+            N_CLASSES = int(N_CLASSES)
+
+        # Depth of the model
+        #M_DEPTH = 5
+
+        M_DEPTH = self.dlg.Build_depth.value()
+        if (not M_DEPTH):
+            M_DEPTH = int(self.dlg.Build_depth.defaultValue())
+        else:
+            M_DEPTH = int(M_DEPTH)
+
+        # Dropout rate 
+        # Either specify only 1 value common across whole model
+        # OR
+        # Specify exactly M_DEPTH vales, these will be reflected to for decoder
+        M_DROPOUT_RATE = [0.25]
+
+        # Convolutional filter depths at each model depth
+        # Either specify only 1 value common across whole model
+        # OR
+        # Specify exactly M_DEPTH vales, these will be reflected to for decoder
+        M_CHANNELS = [16]
+
+        # Kernel/Filter dimensions
+        # Either specify only 1 value common across whole model
+        # OR
+        # Specify exactly M_DEPTH vales, these will be reflected to for decoder
+        M_KERNEL_SIZE = [3]
+
+        # Number of convolutional layers per CONVBLOCK
+        # Either specify only 1 value common across whole model
+        # OR
+        # Specify exactly M_DEPTH vales, these will be reflected to for decoder
+        M_CONV_PER_CONVBLOCK = [1]
+
+        # Number of convolutional layers in ResBlock within CONVBLOCK
+        M_RES_PER_CONVBLOCK = [1]
+
+        # Optimizer type
+        # options :
+        # 'adam'
+        # 'adagrad'
+        # 'rms'
+        # 'sgd'
+        #M_OPTIMIZER = 'adam'
+
+        M_OPTIMIZER = self.dlg.Build_optmzr.currentText()
+
+        print(M_OPTIMIZER)
+        print(type(M_OPTIMIZER))
+
+
+
+        # Learning rate
+        M_LEARNING_RATE = 0.001
+
+        # Enable Batch norm
+        M_BATCH_NORM = True
+
+        # Select activation function
+        # options :
+        # 'relu'
+        # 'sigmoid'
+        # 'tanh'
+        #M_ACTIVATION = 'relu'
+
+        M_ACTIVATION = self.dlg.Build_ActFunc.currentText()
+
+        #Conditional Statements----------------------------------------------------
+
+        # Optimizer specific variables
+        if (M_OPTIMIZER == 'adam'):
+            BETA_1=0.9
+            BETA_2=0.999
+            EPSILON=1e-07
+            OPTIMIZER = tf.keras.optimizers.Adam(M_LEARNING_RATE, BETA_1, BETA_2, EPSILON)
+
+        elif (M_OPTIMIZER == 'adagrad'):
+            IAV=0.1
+            EPSILON=1e-07
+            OPTIMIZER = tf.keras.optimizers.Adagrad(M_LEARNING_RATE, IAV, EPSILON)
+
+        elif (M_OPTIMIZER == 'rms'):
+            RHO=0.9
+            MOMENTUM=0.0
+            EPSILON=1e-07
+            OPTIMIZER = tf.keras.optimizers.RMSprop(M_LEARNING_RATE, RHO, MOMENTUM, EPSILON)
+
+        elif (M_OPTIMIZER == 'sgd'):
+            MOMENTUM=0.0
+            OPTIMIZER = tf.keras.optimizers.SGD(M_LEARNING_RATE, MOMENTUM)
+
+        else:
+            raise Exception('Unknown or Unsupported optimizer function was selected. Options are : adam, adagrad, rms, sgd')
+
+        # Process M_DROPOUT_RATE
+        if len(M_DROPOUT_RATE) == 1:
+            M_DROPOUT_RATE = [M_DROPOUT_RATE[0] for i in range(2*M_DEPTH - 1)]
+        elif len(M_DROPOUT_RATE) == M_DEPTH:
+            temp = M_DROPOUT_RATE[ :-1]
+            temp.reverse()
+            M_DROPOUT_RATE = M_DROPOUT_RATE + temp
+        else:
+            raise Exception('Expected M_DROPOUT_RATE length to be 1 or {}, instead got {}'.format(M_DEPTH, len(M_DROPOUT_RATE)))
+
+
+        # Process M_CHANNELS
+        if len(M_CHANNELS) == 1:
+            n = M_CHANNELS[0]
+            M_CHANNELS = [n*(2**i) for i in range(M_DEPTH)]
+            temp = M_CHANNELS[ :-1]
+            temp.reverse()
+            M_CHANNELS = M_CHANNELS + temp
+        elif len(M_CHANNELS) == M_DEPTH:
+            temp = M_CHANNELS[ :-1]
+            temp.reverse()
+            M_CHANNELS = M_CHANNELS + temp
+        else:
+            raise Exception('Expected M_CHANNELS length to be 1 or {}, instead got {}'.format(M_DEPTH, len(M_CHANNELS)))
+
+        # Process M_KERNEL_SIZE
+        if len(M_KERNEL_SIZE) == 1:
+            M_KERNEL_SIZE = [M_KERNEL_SIZE[0] for i in range(2*M_DEPTH - 1)]
+        elif len(M_KERNEL_SIZE) == M_DEPTH:
+            temp = M_KERNEL_SIZE[ :-1]
+            temp.reverse()
+            M_KERNEL_SIZE = M_KERNEL_SIZE + temp
+        else:
+            raise Exception('Expected M_KERNEL_SIZE length to be 1 or {}, instead got {}'.format(M_DEPTH, len(M_KERNEL_SIZE)))
+
+        # Process M_CONV_PER_CONVBLOCK
+        if len(M_CONV_PER_CONVBLOCK) == 1:
+            M_CONV_PER_CONVBLOCK = [M_CONV_PER_CONVBLOCK[0] for i in range(2*M_DEPTH - 1)]
+        elif len(M_CONV_PER_CONVBLOCK) == M_DEPTH:
+            temp = M_CONV_PER_CONVBLOCK[ :-1]
+            temp.reverse()
+            M_CONV_PER_CONVBLOCK = M_CONV_PER_CONVBLOCK + temp
+        else:
+            raise Exception('Expected M_CONV_PER_CONVBLOCK length to be 1 or {}, instead got {}'.format(M_DEPTH, len(M_CONV_PER_CONVBLOCK)))
+
+        # Process M_RES_PER_CONVBLOCK
+        if len(M_RES_PER_CONVBLOCK) == 1:
+            M_RES_PER_CONVBLOCK = [M_RES_PER_CONVBLOCK[0] for i in range(2*M_DEPTH - 1)]
+            M_RES_PER_CONVBLOCK[M_DEPTH-1] = 0
+        elif len(M_RES_PER_CONVBLOCK) == M_DEPTH-1:
+            temp = M_RES_PER_CONVBLOCK
+            temp.reverse()
+            M_RES_PER_CONVBLOCK = M_RES_PER_CONVBLOCK + [0] + temp
+        else:
+            raise Exception('Expected M_RES_PER_CONVBLOCK length to be 1 or {}, instead got {}'.format(M_DEPTH, len(M_RES_PER_CONVBLOCK)))
+
+
+        #Model Architecture------------------------------------------------------
+
+        def Conv_Block_E(num_filters, kernel_size, layer_num, num_convs, num_res, input_tensor):
+            '''
+            Convolutional block - Encoder
+            in -> Conv layers -> Res layers -> out
+            '''
+            x = input_tensor
+
+            for i in range(1, num_convs+1):
+                x = Conv2D(num_filters, kernel_size, 1, padding='same', name='conv_{}_{}'.format(layer_num, i))(x)
+                if M_BATCH_NORM:
+                    x = BatchNormalization(name='batch_norm_{}_{}'.format(layer_num, i))(x)
+                x = Activation(M_ACTIVATION, name='activation_{}_{}'.format(layer_num, i))(x)
+
+            if (num_res > 0):
+                y = x
+
+                for i in range(1, num_res+1):
+                    y = Conv2D(num_filters, kernel_size, 1, padding='same', name='res_{}_{}'.format(layer_num, i))(y)
+                    if M_BATCH_NORM:
+                        y = BatchNormalization(name='res_batch_norm_{}_{}'.format(layer_num, i))(y)
+                    y = Activation(M_ACTIVATION, name='res_activation_{}_{}'.format(layer_num, i))(y)
+            
+                x = Add(name='add_{}'.format(layer_num))([y, x])
+
+            return x
+
+        def Conv_Block_D(num_filters, kernel_size, layer_num, num_convs, num_res, input_tensor):
+            '''
+            Convolutional block - Decoder
+            in -> Res layers -> Conv layers -> out
+            '''
+            x = input_tensor
+
+            if (num_res > 0):
+                y = x
+
+                for i in range(1, num_res+1):
+                    y = Conv2D(num_filters[0], kernel_size, 1, padding='same', name='conv_{}_{}'.format(layer_num, i))(y)
+                    if M_BATCH_NORM:
+                        y = BatchNormalization(name='batch_norm_{}_{}'.format(layer_num, i))(y)
+                    y = Activation(M_ACTIVATION, name='activation_{}_{}'.format(layer_num, i))(y)
+            
+                x = Add(name='add_{}'.format(layer_num))([y, x])
+
+            for i in range(1, num_convs+1):
+                x = Conv2D(num_filters[1], kernel_size, 1, padding='same', name='res_{}_{}'.format(layer_num, i))(x)
+                if M_BATCH_NORM:
+                    x = BatchNormalization(name='res_batch_norm_{}_{}'.format(layer_num, i))(x)
+                x = Activation(M_ACTIVATION, name='res_activation_{}_{}'.format(layer_num, i))(x)
+
+            return x
+
+        def Encoder(input_tensor, layer_num):
+            '''
+            Encoder Block
+            in -> Conv_Block_E -> Maxpool -> Dropout -> out
+            '''
+            conv = Conv_Block_E(M_CHANNELS[layer_num], M_KERNEL_SIZE[layer_num], layer_num, M_CONV_PER_CONVBLOCK[layer_num], M_RES_PER_CONVBLOCK[layer_num], input_tensor)
+            pool = MaxPooling2D((2, 2), name='pool_{}'.format(layer_num))(conv)
+            drop = Dropout(M_DROPOUT_RATE[layer_num], name='drop_{}'.format(layer_num))(pool)
+            return drop, conv
+
+        def Decoder(input_tensor, skip_tensor, layer_num):
+            '''
+            Decoder Block
+            in -> Upscale -> Concat with skip_tensor -> Dropout -> Conv_Block_D -> out
+            '''
+            upsp = Conv2DTranspose(M_CHANNELS[layer_num], 3, strides=(2, 2), padding='same', name='upsp_{}'.format(layer_num))(input_tensor)
+            cnct = concatenate([upsp, skip_tensor], name='cnct_{}'.format(layer_num))
+            drop = Dropout(M_DROPOUT_RATE[layer_num], name='drop_{}'.format(layer_num))(cnct)
+            conv = Conv_Block_D([M_CHANNELS[layer_num-1], M_CHANNELS[layer_num]], M_KERNEL_SIZE[layer_num], layer_num, M_CONV_PER_CONVBLOCK[layer_num], M_RES_PER_CONVBLOCK[layer_num], drop)
+            return conv
+
+        def get_UNET():
+            '''
+            Returns UNET model specfied according to the variables
+            '''
+            inputs = Input((None, None, N_CHANNELS))
+
+            skip_connections = list()
+            for i in range(M_DEPTH-1):
+                if i == 0:
+                    x, conv = Encoder(inputs, i)
+                else:
+                    x, conv = Encoder(x, i)
+                skip_connections.append(conv);
+
+            x = Conv_Block_E(M_CHANNELS[M_DEPTH-1], M_KERNEL_SIZE[M_DEPTH-1], M_DEPTH-1, M_CONV_PER_CONVBLOCK[M_DEPTH-1], M_RES_PER_CONVBLOCK[M_DEPTH-1], x)
+
+            skip_connections.reverse()
+            for i in range(M_DEPTH, 2*M_DEPTH-1):
+                x = Decoder(x, skip_connections[i-M_DEPTH], i)
+
+            classify = Conv2D(N_CLASSES, 1, 1, activation='sigmoid')(x)
+
+            model = tf.keras.models.Model(inputs=inputs, outputs=classify)
+
+            return model
+
+        def compile_model(model):
+            model.compile(optimizer=OPTIMIZER,
+                            loss='binary_crossentropy',
+                            metrics=[
+                                    #jaccard_coef,
+                                    #jaccard_coef_int,
+                                    'accuracy']
+                          )
+            return model
+
+        model = get_UNET()
+        compile_model(model)
+
+        #Save Model--------------------------------------------------------------------
+        model_architecture = model.to_json()
+
+        json_path = 'Dynamic_UNET.json'
+
+        with open(json_path, 'w') as json_file:
+            json_file.write(model_architecture)
+
+
+
+
 #-------------------------------------------WORKFLOW---------------------------------------------------------
     def parameterenabling(self):
         i = self.dlg.Method_comboBox.currentIndex()
@@ -722,12 +1044,15 @@ class RandomForestClassifier:
         #Calls the function to split image after the button is pressed
         self.dlg.Tiles_Button.clicked.connect(self.tiles)
 
+    #---------------------- BUILD MODEL-------------------------------------------------
+
+        self.dlg.Build_Button.clicked.connect(self.UNET_build)
+
 
     #---------------------- Train TAB (NN based)-------------------------------------------------
 
         #for enabeling parameter input widgets
         self.dlg.Method_comboBox.activated.connect(self.parameterenabling)
-        self.dlg.Train_Button.clicked.connect(self.vector2raster)
 
     #----------------------------Train TAB-------------------------------------------------------
 
