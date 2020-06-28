@@ -37,6 +37,7 @@ import os.path
 import processing, sys
 import glob
 
+
 class RandomForestClassifier:
     """QGIS Plugin Implementation."""
 
@@ -87,18 +88,17 @@ class RandomForestClassifier:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('RandomForestClassifier', message)
 
-
     def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
+            self,
+            icon_path,
+            text,
+            callback,
+            enabled_flag=True,
+            add_to_menu=True,
+            add_to_toolbar=True,
+            status_tip=None,
+            whats_this=None,
+            parent=None):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -175,7 +175,6 @@ class RandomForestClassifier:
         # will be set False in run()
         self.first_start = True
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -190,7 +189,7 @@ class RandomForestClassifier:
     # def saysome(self):
     #     print("Button Clicked")
 
-#------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------
     # def array2raster(newRasterfn, geotrans, proj, array):
 
     #     cols = array.shape[1]
@@ -203,11 +202,10 @@ class RandomForestClassifier:
     #     outRaster.SetProjection(proj)
     #     outband.FlushCache()
 
+    # ------------------------------------------------TOOLS-----------------------------------------------------------
 
-#------------------------------------------------TOOLS-----------------------------------------------------------
-    
     def vector2raster(self, v_path):
-        #v_path = self.dlg.Train_img_label.filePath()
+        # v_path = self.dlg.Train_img_label.filePath()
         print(v_path)
 
         vlayer = QgsVectorLayer(v_path, "Vector layer", "ogr")
@@ -216,15 +214,15 @@ class RandomForestClassifier:
         else:
             QgsProject.instance().addMapLayer(vlayer)
             print("Done")
-            
+
         ext = vlayer.extent()
-        #for feature in layer.getFeatures():
+        # for feature in layer.getFeatures():
         #   ext = feature.geometry().boundingBox()  # this line is the relevant part
         xmin = ext.xMinimum()
         xmax = ext.xMaximum()
         ymin = ext.yMinimum()
         ymax = ext.yMaximum()
-        print(xmin,' ',xmax,' ',ymax,' ',ymin)
+        print(xmin, ' ', xmax, ' ', ymax, ' ', ymin)
 
         extent_list = str(xmin) + ',' + str(xmax) + ',' + str(ymin) + ',' + str(ymax) + '[]'
 
@@ -234,8 +232,8 @@ class RandomForestClassifier:
         r_path = 'QGIS_Temp/V2R_converted_temp.tif'
 
         processing.run("gdal:rasterize",
-                       {'INPUT': v_path, 'FIELD':'id', 'UNITS': 1, 'WIDTH': 0.001,
-                        'HEIGHT': 0.001, 'EXTENT': extent_list , 'NODATA': 0,
+                       {'INPUT': v_path, 'FIELD': 'id', 'UNITS': 1, 'WIDTH': 0.001,
+                        'HEIGHT': 0.001, 'EXTENT': extent_list, 'NODATA': 0,
                         'OPTIONS': '', 'DATA_TYPE': 5, 'INIT': None, 'INVERT': False, 'EXTRA': '',
                         'OUTPUT': r_path})
 
@@ -250,61 +248,58 @@ class RandomForestClassifier:
         # IMG_ADD = self.dlg.train_img_add.filePath()
         # IMG_LABEL_ADD = self.dlg.train_img_label.filePath()
 
-
         input1 = gdal.Open(IMG_LABEL, gdalconst.GA_ReadOnly)
         inputProj = input1.GetProjection()
         inputTrans = input1.GetGeoTransform()
 
-
         reference = gdal.Open(REF_IMG, gdalconst.GA_ReadOnly)
         referenceProj = reference.GetProjection()
         referenceTrans = reference.GetGeoTransform()
-        bandreference = reference.GetRasterBand(1)    
-        x = reference.RasterXSize 
+        bandreference = reference.GetRasterBand(1)
+        x = reference.RasterXSize
         y = reference.RasterYSize
 
-        RESAMPLED_IMG_LABEL = "Delhi_ROI_resampled2.tif" #Path to output file
-        driver= gdal.GetDriverByName('GTiff')
-        output = driver.Create(RESAMPLED_IMG_LABEL,x,y,1,bandreference.DataType)
+        RESAMPLED_IMG_LABEL = "Delhi_ROI_resampled2.tif"  # Path to output file
+        driver = gdal.GetDriverByName('GTiff')
+        output = driver.Create(RESAMPLED_IMG_LABEL, x, y, 1, bandreference.DataType)
         output.SetGeoTransform(referenceTrans)
         output.SetProjection(referenceProj)
 
-        gdal.ReprojectImage(input1,output,inputProj,referenceProj,gdalconst.GRA_Bilinear)
+        gdal.ReprojectImage(input1, output, inputProj, referenceProj, gdalconst.GRA_Bilinear)
 
         del output
 
         return RESAMPLED_IMG_LABEL
 
-#-------------------------------------------TILES GENERATOR-------------------------------------------------
+    # -------------------------------------------TILES GENERATOR-------------------------------------------------
     def tiles(self):
 
         in_path = self.dlg.Tiles_Input.filePath()
-        
-        if(not in_path):
+
+        if (not in_path):
             print("Enter Input")
             QMessageBox.critical(self.dlg, 'No Input', 'Please select the image to be splitted.')
             return
 
-        # in_path = 'C:/forest.tif'         
+        # in_path = 'C:/forest.tif'
         out_path = 'C:/Users/Atishay/Desktop/Images/'
         file_name = 'Tile'
-        
+
         if not os.path.exists(out_path):
             os.makedirs(out_path)
-             
+
         tile_size_x = self.dlg.TileSizeX.value()
         tile_size_y = self.dlg.TileSizeY.value()
-             
-        if(not tile_size_x):
+
+        if (not tile_size_x):
             tile_size_x = int(self.dlg.TileSizeX.defaultValue())
         else:
-           tile_size_x = int(tile_size_x)
-           
-        if(not tile_size_y):
+            tile_size_x = int(tile_size_x)
+
+        if (not tile_size_y):
             tile_size_y = int(self.dlg.TileSizeX.defaultValue())
         else:
-           tile_size_y = int(tile_size_y)
-
+            tile_size_y = int(tile_size_y)
 
         ds = gdal.Open(in_path)
 
@@ -313,42 +308,47 @@ class RandomForestClassifier:
 
         CREATE_NO_WINDOW = 0x08000000
 
-        #for i in range(5):
+        # for i in range(5):
         band = ds.GetRasterBand(1)
         xsize = band.XSize
         ysize = band.YSize
-                 
+
         for i in range(0, xsize, tile_size_x):
             for j in range(0, ysize, tile_size_y):
-                com_string = "gdal_translate -of GTIFF -srcwin " + str(i)+ ", " + str(j) + ", " + str(tile_size_x) + ", " + str(tile_size_y) + " " + str(in_path) + " " + str(out_path) + str(file_name)  + str(i) + "_" + str(j) + ".tif"
+                com_string = "gdal_translate -of GTIFF -srcwin " + str(i) + ", " + str(j) + ", " + str(
+                    tile_size_x) + ", " + str(tile_size_y) + " " + str(in_path) + " " + str(out_path) + str(
+                    file_name) + str(i) + "_" + str(j) + ".tif"
                 subprocess.call(com_string, creationflags=CREATE_NO_WINDOW)
                 complete = complete + 20
                 self.dlg.Tile_progressBar.setValue(complete)
 
-
         label_path_v = self.dlg.Tiles_Input_2.filePath()
-        label_path_r = self.vector2raster(label_path_v)
-        label_path = self.resampler(in_path, label_path_r)
+        revstr = label_path_v[::-1]
+        splitrevstr = revstr.split('.')
+        if splitrevstr[0] == 'ffit':
+            label_path = self.dlg.Tiles_Input_2.filePath()
+        else:
+            label_path_r = self.vector2raster(label_path_v)
+            label_path = self.resampler(in_path, label_path_r)
 
         out_path = 'C:/Users/Atishay/Desktop/Label/'
         file_name = 'Tile'
-        
+
         if not os.path.exists(out_path):
             os.makedirs(out_path)
-             
+
         tile_size_x = self.dlg.TileSizeX.value()
         tile_size_y = self.dlg.TileSizeY.value()
-             
-        if(not tile_size_x):
+
+        if (not tile_size_x):
             tile_size_x = int(self.dlg.TileSizeX.defaultValue())
         else:
-           tile_size_x = int(tile_size_x)
-           
-        if(not tile_size_y):
+            tile_size_x = int(tile_size_x)
+
+        if (not tile_size_y):
             tile_size_y = int(self.dlg.TileSizeX.defaultValue())
         else:
-           tile_size_y = int(tile_size_y)
-
+            tile_size_y = int(tile_size_y)
 
         ds = gdal.Open(label_path)
 
@@ -357,30 +357,32 @@ class RandomForestClassifier:
 
         CREATE_NO_WINDOW = 0x08000000
 
-        #for i in range(5):
+        # for i in range(5):
         band = ds.GetRasterBand(1)
         xsize = band.XSize
         ysize = band.YSize
-                 
+
         for i in range(0, xsize, tile_size_x):
             for j in range(0, ysize, tile_size_y):
-                com_string = "gdal_translate -of GTIFF -srcwin " + str(i)+ ", " + str(j) + ", " + str(tile_size_x) + ", " + str(tile_size_y) + " " + str(label_path) + " " + str(out_path) + str(file_name)  + str(i) + "_" + str(j) + ".tif"
+                com_string = "gdal_translate -of GTIFF -srcwin " + str(i) + ", " + str(j) + ", " + str(
+                    tile_size_x) + ", " + str(tile_size_y) + " " + str(label_path) + " " + str(out_path) + str(
+                    file_name) + str(i) + "_" + str(j) + ".tif"
                 subprocess.call(com_string, creationflags=CREATE_NO_WINDOW)
                 complete = complete + 20
                 self.dlg.Tile_progressBar.setValue(complete)
 
-#-------------------------------------------CLASSIFIERS---------------------------------------------------------
+    # -------------------------------------------CLASSIFIERS---------------------------------------------------------
 
     def randomForest(self):
-    #import statements
-    
+        # import statements
+
         from osgeo import gdal, gdal_array
         import numpy as np
 
         try:
             from sklearn.model_selection import train_test_split
             from sklearn.ensemble import RandomForestClassifier
-            from sklearn.metrics import confusion_matrix,classification_report
+            from sklearn.metrics import confusion_matrix, classification_report
         except ImportError:
             print("scikit-learn package not present\nInstalling...")
             import pip
@@ -388,7 +390,7 @@ class RandomForestClassifier:
 
             from sklearn.model_selection import train_test_split
             from sklearn.ensemble import RandomForestClassifier
-            from sklearn.metrics import confusion_matrix,classification_report
+            from sklearn.metrics import confusion_matrix, classification_report
 
         try:
             import pickle
@@ -397,13 +399,11 @@ class RandomForestClassifier:
             pip.main(["install", "--user", "pickle"])
             import pickle
 
-
         self.dlg.Clfr_progressBar.setValue(30)
-            
 
         IMAGE_ADD = self.dlg.input_img_box.filePath()
         MODEL_ADD = self.dlg.input_img_box_2.filePath()
-        #OUTPUT_ADD = fp3
+        # OUTPUT_ADD = fp3
 
         # #To open the image:
         img_ds = gdal.Open(IMAGE_ADD, gdal.GA_ReadOnly)
@@ -422,25 +422,24 @@ class RandomForestClassifier:
             img_as_array = img.reshape(-1, img.shape[2])
             print('Reshaped from {n} to {o}'.format(o=img.shape,
                                                     n=img_as_array.shape))
-                                                    
+
         self.dlg.Clfr_progressBar.setValue(60)
 
         class_prediction = rf.predict(img_as_array)
 
         class_prediction = class_prediction.reshape(img[:, :, 0].shape)
-        print(class_prediction.shape)                               
-
+        print(class_prediction.shape)
 
         geotrans = img_ds.GetGeoTransform()
         proj = img_ds.GetProjection()
 
         fname = 'Delhi_classified.tif'
 
-        #fname = self.dlg.input_img_box_3.filePath()
-        
-        #self.array2raster(fname, geotrans, proj, class_prediction)
+        # fname = self.dlg.input_img_box_3.filePath()
 
-        #To convert array to raster
+        # self.array2raster(fname, geotrans, proj, class_prediction)
+
+        # To convert array to raster
         cols = class_prediction.shape[1]
         rows = class_prediction.shape[0]
         driver = gdal.GetDriverByName('GTiff')
@@ -454,7 +453,7 @@ class RandomForestClassifier:
         self.dlg.Clfr_progressBar.setValue(100)
 
     def UNET_Classifier(self):
-        
+
         import gdal
         import numpy as np
         import matplotlib.pyplot as plt
@@ -493,7 +492,7 @@ class RandomForestClassifier:
 
         img = load_img(IMG_ADD)
         x_img = img_to_array(img)
-        x_img = resize(x_img, (512, 512), mode = 'constant', preserve_range = True)
+        x_img = resize(x_img, (512, 512), mode='constant', preserve_range=True)
         x_img.shape
 
         self.dlg.Clfr_progressBar.setValue(50)
@@ -506,7 +505,8 @@ class RandomForestClassifier:
 
         self.dlg.Clfr_progressBar.setValue(70)
 
-        pred = save_model.predict(np.expand_dims(x_img, axis=0), verbose=1)[0, :, :, 0] # [ : : ] to squeeze the image dimension equiv to pred[0].squeeze()
+        pred = save_model.predict(np.expand_dims(x_img, axis=0), verbose=1)[0, :, :,
+               0]  # [ : : ] to squeeze the image dimension equiv to pred[0].squeeze()
 
         pred_bin = np.where(pred > THRESHOLD, 1, 0)
 
@@ -517,7 +517,7 @@ class RandomForestClassifier:
 
         self.dlg.Clfr_progressBar.setValue(100)
 
-#-------------------------------------------TRAIN---------------------------------------------------------
+    # -------------------------------------------TRAIN---------------------------------------------------------
     def rfc_train(self):
 
         from osgeo import gdal, gdal_array
@@ -536,15 +536,15 @@ class RandomForestClassifier:
             from sklearn.model_selection import train_test_split
             from sklearn.ensemble import RandomForestClassifier
             from sklearn.metrics import confusion_matrix, classification_report
-        
+
         self.dlg.train_progressBar.setValue(20)
-        
+
         IMG_ADD = self.dlg.train_img_add.filePath()
         IMG_VLABEL_ADD = self.dlg.train_img_label.filePath()
 
         IMG_LABEL_ADD = self.vector2raster(IMG_VLABEL_ADD)
         RESAMPLED_IMG_LABEL1 = self.resampler(IMG_ADD, IMG_LABEL_ADD)
-        
+
         VALIDATION_SPLIT = self.dlg.train_valRatio.currentText()  # TO BE TAKEN FROM USER (Train Val Ratio)
 
         if (not VALIDATION_SPLIT):
@@ -573,9 +573,7 @@ class RandomForestClassifier:
         else:
             Depth = int(Depth)
 
-
         self.dlg.train_progressBar.setValue(40)
-
 
         img_ds = gdal.Open(IMG_ADD, gdal.GA_ReadOnly)
 
@@ -602,13 +600,13 @@ class RandomForestClassifier:
         print(features.shape)
         print(labels.shape)
 
-        X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=VALIDATION_SPLIT, random_state=0)
+        X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=VALIDATION_SPLIT,
+                                                            random_state=0)
 
         print(X_train.shape)
         print(X_test.shape)
 
         self.dlg.train_progressBar.setValue(60)
-
 
         rf = RandomForestClassifier(n_estimators=num_trees, max_depth=None, n_jobs=-1,
                                     oob_score=True)  # n_estim = Trees, max_depth = Depth
@@ -617,7 +615,6 @@ class RandomForestClassifier:
 
         self.dlg.train_progressBar.setValue(80)
 
-        
         filename = 'model_5band_plugged.sav'
         pickle.dump(rf, open(filename, 'wb'))
 
@@ -625,7 +622,7 @@ class RandomForestClassifier:
 
     def UNET_build(self):
 
-        #imports-----------------------------------------------------------
+        # imports-----------------------------------------------------------
         import tensorflow as tf
         import tensorflow.keras.backend as K
         from tensorflow.keras.layers import (Dropout,
@@ -642,16 +639,16 @@ class RandomForestClassifier:
                                                 ModelCheckpoint,
                                                 ReduceLROnPlateau)
         from tensorflow.keras.preprocessing.image import (ImageDataGenerator,
-                                               array_to_img,
-                                               img_to_array,
-                                               load_img)
+                                                          array_to_img,
+                                                          img_to_array,
+                                                          load_img)
 
         from skimage.transform import resize
 
-        #Model Parameters[From Input Fields]--------------------------------------------------
+        # Model Parameters[From Input Fields]--------------------------------------------------
 
         # Number of bands in input image
-        #N_CHANNELS = 3
+        # N_CHANNELS = 3
 
         N_CHANNELS = self.dlg.Build_bands.value()
         if (not N_CHANNELS):
@@ -659,10 +656,8 @@ class RandomForestClassifier:
         else:
             N_CHANNELS = int(N_CHANNELS)
 
-
-
         # Number of classes to be classified
-        #N_CLASSES = 1
+        # N_CLASSES = 1
 
         N_CLASSES = self.dlg.Build_classes.value()
         if (not N_CLASSES):
@@ -671,7 +666,7 @@ class RandomForestClassifier:
             N_CLASSES = int(N_CLASSES)
 
         # Depth of the model
-        #M_DEPTH = 5
+        # M_DEPTH = 5
 
         M_DEPTH = self.dlg.Build_depth.value()
         if (not M_DEPTH):
@@ -679,32 +674,67 @@ class RandomForestClassifier:
         else:
             M_DEPTH = int(M_DEPTH)
 
-        # Dropout rate 
+        # Dropout rate
         # Either specify only 1 value common across whole model
         # OR
         # Specify exactly M_DEPTH vales, these will be reflected to for decoder
-        M_DROPOUT_RATE = [0.25]
+        # M_DROPOUT_RATE = [0.25]
+        M_DROPOUT_RATE = list()
+        dor_inp = self.dlg.Build_dout.value()
+        dor_inp = dor_inp.strip()
+        dor_list = dor_inp.split(',')
+
+        for i in dor_list:
+            M_DROPOUT_RATE.append(int(i))
 
         # Convolutional filter depths at each model depth
         # Either specify only 1 value common across whole model
         # OR
         # Specify exactly M_DEPTH vales, these will be reflected to for decoder
-        M_CHANNELS = [16]
+        # M_CHANNELS = [16]
+        M_CHANNELS = list()
+        chan_inp = self.dlg.Build_dout_2.value()
+        chan_inp = chan_inp.strip()
+        chan_list = chan_inp.split(',')
+
+        for i in chan_list:
+            M_CHANNELS.append(int(i))
 
         # Kernel/Filter dimensions
         # Either specify only 1 value common across whole model
         # OR
         # Specify exactly M_DEPTH vales, these will be reflected to for decoder
-        M_KERNEL_SIZE = [3]
+        # M_KERNEL_SIZE = [3]
+        M_KERNEL_SIZE = list()
+        ker_inp = self.dlg.Build_dout_4.value()
+        ker_inp = ker_inp.strip()
+        ker_list = ker_inp.split(',')
+
+        for i in ker_list:
+            M_KERNEL_SIZE.append(int(i))
 
         # Number of convolutional layers per CONVBLOCK
         # Either specify only 1 value common across whole model
         # OR
         # Specify exactly M_DEPTH vales, these will be reflected to for decoder
-        M_CONV_PER_CONVBLOCK = [1]
+        # M_CONV_PER_CONVBLOCK = [1]
+        M_CONV_PER_CONVBLOCK = list()
+        conv_inp = self.dlg.Build_dout_5.value()
+        conv_inp = conv_inp.strip()
+        conv_list = conv_inp.split(',')
+
+        for i in conv_list:
+            M_CONV_PER_CONVBLOCK.append(int(i))
 
         # Number of convolutional layers in ResBlock within CONVBLOCK
-        M_RES_PER_CONVBLOCK = [1]
+        # M_RES_PER_CONVBLOCK = [1]
+        M_RES_PER_CONVBLOCK = list()
+        res_inp = self.dlg.Build_dout_3.value()
+        res_inp = res_inp.strip()
+        res_list = res_inp.split(',')
+
+        for i in res_list:
+            M_RES_PER_CONVBLOCK.append(int(i))
 
         # Optimizer type
         # options :
@@ -712,77 +742,80 @@ class RandomForestClassifier:
         # 'adagrad'
         # 'rms'
         # 'sgd'
-        #M_OPTIMIZER = 'adam'
+        # M_OPTIMIZER = 'adam'
 
         M_OPTIMIZER = self.dlg.Build_optmzr.currentText()
 
         print(M_OPTIMIZER)
         print(type(M_OPTIMIZER))
 
-
-
         # Learning rate
-        M_LEARNING_RATE = 0.001
+        # M_LEARNING_RATE = 0.001
+        M_LEARNING_RATE = self.dlg.Model_Learning_rate.value()
 
         # Enable Batch norm
-        M_BATCH_NORM = True
+        if checkBox_4.isChecked():
+            M_BATCH_NORM = True
+        else:
+            M_BATCH_NORM = False
 
         # Select activation function
         # options :
         # 'relu'
         # 'sigmoid'
         # 'tanh'
-        #M_ACTIVATION = 'relu'
+        # M_ACTIVATION = 'relu'
 
         M_ACTIVATION = self.dlg.Build_ActFunc.currentText()
 
-        #Conditional Statements----------------------------------------------------
+        # Conditional Statements----------------------------------------------------
 
         # Optimizer specific variables
         if (M_OPTIMIZER == 'adam'):
-            BETA_1=0.9
-            BETA_2=0.999
-            EPSILON=1e-07
+            BETA_1 = 0.9
+            BETA_2 = 0.999
+            EPSILON = 1e-07
             OPTIMIZER = tf.keras.optimizers.Adam(M_LEARNING_RATE, BETA_1, BETA_2, EPSILON)
 
         elif (M_OPTIMIZER == 'adagrad'):
-            IAV=0.1
-            EPSILON=1e-07
+            IAV = 0.1
+            EPSILON = 1e-07
             OPTIMIZER = tf.keras.optimizers.Adagrad(M_LEARNING_RATE, IAV, EPSILON)
 
         elif (M_OPTIMIZER == 'rms'):
-            RHO=0.9
-            MOMENTUM=0.0
-            EPSILON=1e-07
+            RHO = 0.9
+            MOMENTUM = 0.0
+            EPSILON = 1e-07
             OPTIMIZER = tf.keras.optimizers.RMSprop(M_LEARNING_RATE, RHO, MOMENTUM, EPSILON)
 
         elif (M_OPTIMIZER == 'sgd'):
-            MOMENTUM=0.0
+            MOMENTUM = 0.0
             OPTIMIZER = tf.keras.optimizers.SGD(M_LEARNING_RATE, MOMENTUM)
 
         else:
-            raise Exception('Unknown or Unsupported optimizer function was selected. Options are : adam, adagrad, rms, sgd')
+            raise Exception(
+                'Unknown or Unsupported optimizer function was selected. Options are : adam, adagrad, rms, sgd')
 
         # Process M_DROPOUT_RATE
         if len(M_DROPOUT_RATE) == 1:
-            M_DROPOUT_RATE = [M_DROPOUT_RATE[0] for i in range(2*M_DEPTH - 1)]
+            M_DROPOUT_RATE = [M_DROPOUT_RATE[0] for i in range(2 * M_DEPTH - 1)]
         elif len(M_DROPOUT_RATE) == M_DEPTH:
-            temp = M_DROPOUT_RATE[ :-1]
+            temp = M_DROPOUT_RATE[:-1]
             temp.reverse()
             M_DROPOUT_RATE = M_DROPOUT_RATE + temp
         else:
-            raise Exception('Expected M_DROPOUT_RATE length to be 1 or {}, instead got {}'.format(M_DEPTH, len(M_DROPOUT_RATE)))
-
+            raise Exception(
+                'Expected M_DROPOUT_RATE length to be 1 or {}, instead got {}'.format(M_DEPTH, len(M_DROPOUT_RATE)))
 
         # Process M_CHANNELS
         if len(M_CHANNELS) == 1:
             n = M_CHANNELS[0]
-            M_CHANNELS = [n*(2**i) for i in range(M_DEPTH)]
-            temp = M_CHANNELS[ :-1]
+            M_CHANNELS = [n * (2 ** i) for i in range(M_DEPTH)]
+            temp = M_CHANNELS[:-1]
             temp.reverse()
             M_CHANNELS = M_CHANNELS + temp
         elif len(M_CHANNELS) == M_DEPTH:
-            temp = M_CHANNELS[ :-1]
+            temp = M_CHANNELS[:-1]
             temp.reverse()
             M_CHANNELS = M_CHANNELS + temp
         else:
@@ -790,37 +823,39 @@ class RandomForestClassifier:
 
         # Process M_KERNEL_SIZE
         if len(M_KERNEL_SIZE) == 1:
-            M_KERNEL_SIZE = [M_KERNEL_SIZE[0] for i in range(2*M_DEPTH - 1)]
+            M_KERNEL_SIZE = [M_KERNEL_SIZE[0] for i in range(2 * M_DEPTH - 1)]
         elif len(M_KERNEL_SIZE) == M_DEPTH:
-            temp = M_KERNEL_SIZE[ :-1]
+            temp = M_KERNEL_SIZE[:-1]
             temp.reverse()
             M_KERNEL_SIZE = M_KERNEL_SIZE + temp
         else:
-            raise Exception('Expected M_KERNEL_SIZE length to be 1 or {}, instead got {}'.format(M_DEPTH, len(M_KERNEL_SIZE)))
+            raise Exception(
+                'Expected M_KERNEL_SIZE length to be 1 or {}, instead got {}'.format(M_DEPTH, len(M_KERNEL_SIZE)))
 
         # Process M_CONV_PER_CONVBLOCK
         if len(M_CONV_PER_CONVBLOCK) == 1:
-            M_CONV_PER_CONVBLOCK = [M_CONV_PER_CONVBLOCK[0] for i in range(2*M_DEPTH - 1)]
+            M_CONV_PER_CONVBLOCK = [M_CONV_PER_CONVBLOCK[0] for i in range(2 * M_DEPTH - 1)]
         elif len(M_CONV_PER_CONVBLOCK) == M_DEPTH:
-            temp = M_CONV_PER_CONVBLOCK[ :-1]
+            temp = M_CONV_PER_CONVBLOCK[:-1]
             temp.reverse()
             M_CONV_PER_CONVBLOCK = M_CONV_PER_CONVBLOCK + temp
         else:
-            raise Exception('Expected M_CONV_PER_CONVBLOCK length to be 1 or {}, instead got {}'.format(M_DEPTH, len(M_CONV_PER_CONVBLOCK)))
+            raise Exception('Expected M_CONV_PER_CONVBLOCK length to be 1 or {}, instead got {}'.format(M_DEPTH, len(
+                M_CONV_PER_CONVBLOCK)))
 
         # Process M_RES_PER_CONVBLOCK
         if len(M_RES_PER_CONVBLOCK) == 1:
-            M_RES_PER_CONVBLOCK = [M_RES_PER_CONVBLOCK[0] for i in range(2*M_DEPTH - 1)]
-            M_RES_PER_CONVBLOCK[M_DEPTH-1] = 0
-        elif len(M_RES_PER_CONVBLOCK) == M_DEPTH-1:
+            M_RES_PER_CONVBLOCK = [M_RES_PER_CONVBLOCK[0] for i in range(2 * M_DEPTH - 1)]
+            M_RES_PER_CONVBLOCK[M_DEPTH - 1] = 0
+        elif len(M_RES_PER_CONVBLOCK) == M_DEPTH - 1:
             temp = M_RES_PER_CONVBLOCK
             temp.reverse()
             M_RES_PER_CONVBLOCK = M_RES_PER_CONVBLOCK + [0] + temp
         else:
-            raise Exception('Expected M_RES_PER_CONVBLOCK length to be 1 or {}, instead got {}'.format(M_DEPTH, len(M_RES_PER_CONVBLOCK)))
+            raise Exception('Expected M_RES_PER_CONVBLOCK length to be 1 or {}, instead got {}'.format(M_DEPTH, len(
+                M_RES_PER_CONVBLOCK)))
 
-
-        #Model Architecture------------------------------------------------------
+        # Model Architecture------------------------------------------------------
 
         def Conv_Block_E(num_filters, kernel_size, layer_num, num_convs, num_res, input_tensor):
             '''
@@ -829,7 +864,7 @@ class RandomForestClassifier:
             '''
             x = input_tensor
 
-            for i in range(1, num_convs+1):
+            for i in range(1, num_convs + 1):
                 x = Conv2D(num_filters, kernel_size, 1, padding='same', name='conv_{}_{}'.format(layer_num, i))(x)
                 if M_BATCH_NORM:
                     x = BatchNormalization(name='batch_norm_{}_{}'.format(layer_num, i))(x)
@@ -838,12 +873,12 @@ class RandomForestClassifier:
             if (num_res > 0):
                 y = x
 
-                for i in range(1, num_res+1):
+                for i in range(1, num_res + 1):
                     y = Conv2D(num_filters, kernel_size, 1, padding='same', name='res_{}_{}'.format(layer_num, i))(y)
                     if M_BATCH_NORM:
                         y = BatchNormalization(name='res_batch_norm_{}_{}'.format(layer_num, i))(y)
                     y = Activation(M_ACTIVATION, name='res_activation_{}_{}'.format(layer_num, i))(y)
-            
+
                 x = Add(name='add_{}'.format(layer_num))([y, x])
 
             return x
@@ -858,15 +893,16 @@ class RandomForestClassifier:
             if (num_res > 0):
                 y = x
 
-                for i in range(1, num_res+1):
-                    y = Conv2D(num_filters[0], kernel_size, 1, padding='same', name='conv_{}_{}'.format(layer_num, i))(y)
+                for i in range(1, num_res + 1):
+                    y = Conv2D(num_filters[0], kernel_size, 1, padding='same', name='conv_{}_{}'.format(layer_num, i))(
+                        y)
                     if M_BATCH_NORM:
                         y = BatchNormalization(name='batch_norm_{}_{}'.format(layer_num, i))(y)
                     y = Activation(M_ACTIVATION, name='activation_{}_{}'.format(layer_num, i))(y)
-            
+
                 x = Add(name='add_{}'.format(layer_num))([y, x])
 
-            for i in range(1, num_convs+1):
+            for i in range(1, num_convs + 1):
                 x = Conv2D(num_filters[1], kernel_size, 1, padding='same', name='res_{}_{}'.format(layer_num, i))(x)
                 if M_BATCH_NORM:
                     x = BatchNormalization(name='res_batch_norm_{}_{}'.format(layer_num, i))(x)
@@ -879,7 +915,8 @@ class RandomForestClassifier:
             Encoder Block
             in -> Conv_Block_E -> Maxpool -> Dropout -> out
             '''
-            conv = Conv_Block_E(M_CHANNELS[layer_num], M_KERNEL_SIZE[layer_num], layer_num, M_CONV_PER_CONVBLOCK[layer_num], M_RES_PER_CONVBLOCK[layer_num], input_tensor)
+            conv = Conv_Block_E(M_CHANNELS[layer_num], M_KERNEL_SIZE[layer_num], layer_num,
+                                M_CONV_PER_CONVBLOCK[layer_num], M_RES_PER_CONVBLOCK[layer_num], input_tensor)
             pool = MaxPooling2D((2, 2), name='pool_{}'.format(layer_num))(conv)
             drop = Dropout(M_DROPOUT_RATE[layer_num], name='drop_{}'.format(layer_num))(pool)
             return drop, conv
@@ -889,10 +926,12 @@ class RandomForestClassifier:
             Decoder Block
             in -> Upscale -> Concat with skip_tensor -> Dropout -> Conv_Block_D -> out
             '''
-            upsp = Conv2DTranspose(M_CHANNELS[layer_num], 3, strides=(2, 2), padding='same', name='upsp_{}'.format(layer_num))(input_tensor)
+            upsp = Conv2DTranspose(M_CHANNELS[layer_num], 3, strides=(2, 2), padding='same',
+                                   name='upsp_{}'.format(layer_num))(input_tensor)
             cnct = concatenate([upsp, skip_tensor], name='cnct_{}'.format(layer_num))
             drop = Dropout(M_DROPOUT_RATE[layer_num], name='drop_{}'.format(layer_num))(cnct)
-            conv = Conv_Block_D([M_CHANNELS[layer_num-1], M_CHANNELS[layer_num]], M_KERNEL_SIZE[layer_num], layer_num, M_CONV_PER_CONVBLOCK[layer_num], M_RES_PER_CONVBLOCK[layer_num], drop)
+            conv = Conv_Block_D([M_CHANNELS[layer_num - 1], M_CHANNELS[layer_num]], M_KERNEL_SIZE[layer_num], layer_num,
+                                M_CONV_PER_CONVBLOCK[layer_num], M_RES_PER_CONVBLOCK[layer_num], drop)
             return conv
 
         def get_UNET():
@@ -902,18 +941,19 @@ class RandomForestClassifier:
             inputs = Input((None, None, N_CHANNELS))
 
             skip_connections = list()
-            for i in range(M_DEPTH-1):
+            for i in range(M_DEPTH - 1):
                 if i == 0:
                     x, conv = Encoder(inputs, i)
                 else:
                     x, conv = Encoder(x, i)
                 skip_connections.append(conv);
 
-            x = Conv_Block_E(M_CHANNELS[M_DEPTH-1], M_KERNEL_SIZE[M_DEPTH-1], M_DEPTH-1, M_CONV_PER_CONVBLOCK[M_DEPTH-1], M_RES_PER_CONVBLOCK[M_DEPTH-1], x)
+            x = Conv_Block_E(M_CHANNELS[M_DEPTH - 1], M_KERNEL_SIZE[M_DEPTH - 1], M_DEPTH - 1,
+                             M_CONV_PER_CONVBLOCK[M_DEPTH - 1], M_RES_PER_CONVBLOCK[M_DEPTH - 1], x)
 
             skip_connections.reverse()
-            for i in range(M_DEPTH, 2*M_DEPTH-1):
-                x = Decoder(x, skip_connections[i-M_DEPTH], i)
+            for i in range(M_DEPTH, 2 * M_DEPTH - 1):
+                x = Decoder(x, skip_connections[i - M_DEPTH], i)
 
             classify = Conv2D(N_CLASSES, 1, 1, activation='sigmoid')(x)
 
@@ -923,18 +963,18 @@ class RandomForestClassifier:
 
         def compile_model(model):
             model.compile(optimizer=OPTIMIZER,
-                            loss='binary_crossentropy',
-                            metrics=[
-                                    #jaccard_coef,
-                                    #jaccard_coef_int,
-                                    'accuracy']
+                          loss='binary_crossentropy',
+                          metrics=[
+                              # jaccard_coef,
+                              # jaccard_coef_int,
+                              'accuracy']
                           )
             return model
 
         model = get_UNET()
         compile_model(model)
 
-        #Save Model--------------------------------------------------------------------
+        # Save Model--------------------------------------------------------------------
         model_architecture = model.to_json()
 
         json_path = 'Dynamic_UNET.json'
@@ -942,25 +982,22 @@ class RandomForestClassifier:
         with open(json_path, 'w') as json_file:
             json_file.write(model_architecture)
 
-
-
-
-#-------------------------------------------WORKFLOW---------------------------------------------------------
+    # -------------------------------------------WORKFLOW---------------------------------------------------------
     def parameterenabling(self):
         i = self.dlg.Method_comboBox.currentIndex()
         print(i)
         if i == 0:
             self.dlg.LearningRate_Filed.setEnabled(True)
             self.dlg.Iteration_comboBox.setEnabled(True)
-            #self.dlg.HiddenLayer_comboBox.setEnabled(True)
+            # self.dlg.HiddenLayer_comboBox.setEnabled(True)
         if i == 1:
             self.dlg.LearningRate_Filed.setEnabled(False)
             self.dlg.Iteration_comboBox.setEnabled(False)
-            #self.dlg.HiddenLayer_comboBox.setEnabled(True)
+            # self.dlg.HiddenLayer_comboBox.setEnabled(True)
         if i == 2:
             self.dlg.LearningRate_Filed.setEnabled(True)
             self.dlg.Iteration_comboBox.setEnabled(True)
-            #self.dlg.HiddenLayer_comboBox.setEnabled(True)
+            # self.dlg.HiddenLayer_comboBox.setEnabled(True)
 
     def parameterenabling1(self):
         i = self.dlg.Classifier_comboBox.currentIndex()
@@ -980,18 +1017,18 @@ class RandomForestClassifier:
             self.UNET_Classifier()
 
         if i == 1:
-            #self.print_check()
+            # self.print_check()
             self.randomForest()
-        
-#---------------------------------------------------------------------------------------------------------------
-    
+
+    # ---------------------------------------------------------------------------------------------------------------
+
     def print_check(self):
         print("check")
 
     def merge_tiles(self):
         input_path = self.dlg.input_img_box.filePath()
         # output_path = self.dlg.input_img_box_3.filePath()
-        output_path = 'C:/Users/HP/Desktop/Tile'            # Output location needs to be looked at
+        output_path = 'C:/Users/HP/Desktop/Tile'  # Output location needs to be looked at
         tiles = list()
         for tile in glob.glob(input_path + "/" + "*.tif"):
             tiles.append(tile)
@@ -1002,7 +1039,7 @@ class RandomForestClassifier:
                                       'OUTPUT': str(output_path) + '/' + 'Merge' + '.tif'})
         print("All Done !!")
 
-#--------------------------------------------DIALOG BOX------------------------------------------------------
+    # --------------------------------------------DIALOG BOX------------------------------------------------------
 
     def run(self):
         """Run method that performs all the real work"""
@@ -1012,13 +1049,13 @@ class RandomForestClassifier:
         if self.first_start == True:
             self.first_start = False
             self.dlg = RandomForestClassifierDialog()
-        
-        #Progress bar
+
+        # Progress bar
         self.dlg.Tile_progressBar.setValue(0)
         self.dlg.train_progressBar.setValue(0)
         self.dlg.Clfr_progressBar.setValue(0)
 
-        #Temporary
+        # Temporary
         self.dlg.input_img_box_3.setEnabled(False)
         self.dlg.train_output.setEnabled(False)
         self.dlg.Output_Field_2.setEnabled(False)
@@ -1027,39 +1064,37 @@ class RandomForestClassifier:
         # show the dialog
         self.dlg.show()
 
-    #----------------------------CLASSIFIER TAB----------------------------------------
+        # ----------------------------CLASSIFIER TAB----------------------------------------
 
-        #self.dlg.testButton.clicked.connect(QMessageBox(self.iface.mainWindow(), 'Reverse Geocoding Error', 'Wrong Format!\nExiting...'))
-        #print(IMG_ADD)
-        
+        # self.dlg.testButton.clicked.connect(QMessageBox(self.iface.mainWindow(), 'Reverse Geocoding Error', 'Wrong Format!\nExiting...'))
+        # print(IMG_ADD)
+
         self.dlg.Classifier_comboBox.activated.connect(self.parameterenabling1)
         self.dlg.RunClassifier_Button.clicked.connect(self.Run_Classifier)
 
-        #self.dlg.RunClassifier_Button.clicked.connect(self.merge)
-    #--------------------Tiles Generation TAB----------------------------------------------
-        
-        #Stores entries from the input boxes
-        #tr_IMG_ADD = self.dlg.ImageInput_Field.filePath()
+        # self.dlg.RunClassifier_Button.clicked.connect(self.merge)
+        # --------------------Tiles Generation TAB----------------------------------------------
 
-        #Calls the function to split image after the button is pressed
+        # Stores entries from the input boxes
+        # tr_IMG_ADD = self.dlg.ImageInput_Field.filePath()
+
+        # Calls the function to split image after the button is pressed
         self.dlg.Tiles_Button.clicked.connect(self.tiles)
 
-    #---------------------- BUILD MODEL-------------------------------------------------
+        # ---------------------- BUILD MODEL-------------------------------------------------
 
         self.dlg.Build_Button.clicked.connect(self.UNET_build)
 
+        # ---------------------- Train TAB (NN based)-------------------------------------------------
 
-    #---------------------- Train TAB (NN based)-------------------------------------------------
-
-        #for enabeling parameter input widgets
+        # for enabeling parameter input widgets
         self.dlg.Method_comboBox.activated.connect(self.parameterenabling)
 
-    #----------------------------Train TAB-------------------------------------------------------
+        # ----------------------------Train TAB-------------------------------------------------------
 
         self.dlg.train_button.clicked.connect(self.rfc_train)
 
-
-    #--------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------
 
         # Run the dialog event loop
         result = self.dlg.exec_()
