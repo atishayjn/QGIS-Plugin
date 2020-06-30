@@ -378,6 +378,7 @@ class RandomForestClassifier:
 
         from osgeo import gdal, gdal_array
         import numpy as np
+        import pickle
 
         try:
             from sklearn.model_selection import train_test_split
@@ -392,12 +393,7 @@ class RandomForestClassifier:
             from sklearn.ensemble import RandomForestClassifier
             from sklearn.metrics import confusion_matrix, classification_report
 
-        try:
-            import pickle
-        except ImportError:
-            import pip
-            pip.main(["install", "--user", "pickle"])
-            import pickle
+
 
         self.dlg.Clfr_progressBar.setValue(30)
 
@@ -417,7 +413,7 @@ class RandomForestClassifier:
         print(img.shape)
 
         with open(MODEL_ADD, 'rb') as f:
-            rf = pickle.load(f)
+            model = pickle.load(f)
 
             img_as_array = img.reshape(-1, img.shape[2])
             print('Reshaped from {n} to {o}'.format(o=img.shape,
@@ -425,7 +421,7 @@ class RandomForestClassifier:
 
         self.dlg.Clfr_progressBar.setValue(60)
 
-        class_prediction = rf.predict(img_as_array)
+        class_prediction = model.predict(img_as_array)
 
         class_prediction = class_prediction.reshape(img[:, :, 0].shape)
         print(class_prediction.shape)
@@ -433,7 +429,7 @@ class RandomForestClassifier:
         geotrans = img_ds.GetGeoTransform()
         proj = img_ds.GetProjection()
 
-        fname = 'Delhi_classified.tif'
+        fname = 'Image_classified.tif'
 
         # fname = self.dlg.input_img_box_3.filePath()
 
@@ -451,6 +447,80 @@ class RandomForestClassifier:
         outband.FlushCache()
 
         self.dlg.Clfr_progressBar.setValue(100)
+
+    def svm(self):
+
+        from osgeo import gdal, gdal_array
+        import numpy as np
+        import pickle
+
+        try:
+            from sklearn.model_selection import train_test_split
+            from sklearn.svm import SVC
+            from sklearn.metrics import confusion_matrix, classification_report
+        except ImportError:
+            print("scikit-learn package not present\nInstalling...")
+            import pip
+            pip.main(["install", "--user", "scikit-learn"])
+
+            from sklearn.model_selection import train_test_split
+            from sklearn.svm import SVC
+            from sklearn.metrics import confusion_matrix, classification_report
+
+
+        self.dlg.Clfr_progressBar.setValue(30)
+
+        IMAGE_ADD = self.dlg.input_img_box.filePath()
+        MODEL_ADD = self.dlg.input_img_box_2.filePath()
+
+        # #To open the image:
+        img_ds = gdal.Open(IMAGE_ADD, gdal.GA_ReadOnly)
+
+        img = np.zeros((img_ds.RasterYSize, img_ds.RasterXSize, img_ds.RasterCount),
+                       gdal_array.GDALTypeCodeToNumericTypeCode(img_ds.GetRasterBand(1).DataType))
+
+        for b in range(img.shape[2]):
+            img[:, :, b] = img_ds.GetRasterBand(b + 1).ReadAsArray()
+
+        print(img.shape)
+
+        with open(MODEL_ADD, 'rb') as f:
+            svm = pickle.load(f)
+
+            img_as_array = img.reshape(-1, img.shape[2])
+            print('Reshaped from {n} to {o}'.format(o=img.shape,
+                                                    n=img_as_array.shape))
+
+        self.dlg.Clfr_progressBar.setValue(60)
+
+        class_prediction = svm.predict(img_as_array)
+
+        class_prediction = class_prediction.reshape(img[:, :, 0].shape)
+        print(class_prediction.shape)
+
+        geotrans = img_ds.GetGeoTransform()
+        proj = img_ds.GetProjection()
+
+        fname = 'SVM_classified.tif'
+
+        # fname = self.dlg.input_img_box_3.filePath()
+
+        # To convert array to raster
+        cols = class_prediction.shape[1]
+        rows = class_prediction.shape[0]
+        driver = gdal.GetDriverByName('GTiff')
+        outRaster = driver.Create(fname, cols, rows, 1, gdal.GDT_Byte)
+        outRaster.SetGeoTransform(geotrans)
+        outRaster.SetProjection(proj)
+        outband = outRaster.GetRasterBand(1)
+        outband.WriteArray(class_prediction)
+        outband.FlushCache()
+
+        self.dlg.Clfr_progressBar.setValue(100)
+
+
+
+
 
     def UNET_Classifier(self):
 
@@ -620,6 +690,97 @@ class RandomForestClassifier:
 
         self.dlg.train_progressBar.setValue(100)
 
+    def svm_train(self):
+
+        from osgeo import gdal, gdal_array
+        import numpy as np
+        import pickle
+
+        try:
+            from sklearn.model_selection import train_test_split
+            from sklearn.svm import SVC
+            from sklearn.metrics import confusion_matrix, classification_report
+        except ImportError:
+            print("scikit-learn package not present\nInstalling...")
+            import pip
+            pip.main(["install", "--user", "scikit-learn"])
+
+            from sklearn.model_selection import train_test_split
+            from sklearn.svm import SVC
+            from sklearn.metrics import confusion_matrix, classification_report
+
+        self.dlg.train_progressBar.setValue(20)
+
+        IMG_ADD = self.dlg.train_img_add.filePath()
+        IMG_VLABEL_ADD = self.dlg.train_img_label.filePath()
+
+        IMG_LABEL_ADD = self.vector2raster(IMG_VLABEL_ADD)
+        RESAMPLED_IMG_LABEL1 = self.resampler(IMG_ADD, IMG_LABEL_ADD)
+
+        VALIDATION_SPLIT = self.dlg.train_valRatio.currentText()  # TO BE TAKEN FROM USER (Train Val Ratio)
+
+        if (not VALIDATION_SPLIT):
+            VALIDATION_SPLIT = 0.2
+        else:
+            VALIDATION_SPLIT = float(VALIDATION_SPLIT)
+
+        if (not IMG_ADD):
+            print("Enter Input")
+            QMessageBox.critical(self.dlg, 'No Input', 'Please select the image to be Trained.')
+            return
+        if (not IMG_LABEL_ADD):
+            print("Enter Input")
+            QMessageBox.critical(self.dlg, 'No Input', 'Please input the Label.')
+            return
+
+        self.dlg.train_progressBar.setValue(40)
+
+        img_ds = gdal.Open(IMG_ADD, gdal.GA_ReadOnly)
+
+        img = np.zeros((img_ds.RasterYSize, img_ds.RasterXSize, img_ds.RasterCount),
+                       gdal_array.GDALTypeCodeToNumericTypeCode(img_ds.GetRasterBand(1).DataType))
+
+        for b in range(img.shape[2]):
+            img[:, :, b] = img_ds.GetRasterBand(b + 1).ReadAsArray()
+
+        print(img.shape)
+
+        roi_ds = gdal.Open(RESAMPLED_IMG_LABEL1, gdal.GA_ReadOnly)
+
+        roi = roi_ds.GetRasterBand(1).ReadAsArray().astype(np.uint8)
+
+        print(roi.shape)
+
+        self.dlg.train_progressBar.setValue(50)
+
+        np.vstack(np.unique(roi, return_counts=True)).T
+
+        features = img[roi > 0, :]
+        labels = roi[roi > 0]
+        print(features.shape)
+        print(labels.shape)
+
+        X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=VALIDATION_SPLIT,
+                                                            random_state=0)
+
+        print(X_train.shape)
+        print(X_test.shape)
+
+        self.dlg.train_progressBar.setValue(60)
+
+        svm = SVC()
+
+        svm.fit(X_train, y_train)
+
+        self.dlg.train_progressBar.setValue(80)
+
+        filename = 'svm_model.sav'
+        pickle.dump(svm, open(filename, 'wb'))
+
+        self.dlg.train_progressBar.setValue(100)
+
+
+
     def UNET_build(self):
 
         # imports-----------------------------------------------------------
@@ -685,7 +846,7 @@ class RandomForestClassifier:
         dor_list = dor_inp.split(',')
 
         for i in dor_list:
-            M_DROPOUT_RATE.append(int(i))
+            M_DROPOUT_RATE.append(float(i))
 
         # Convolutional filter depths at each model depth
         # Either specify only 1 value common across whole model
@@ -754,7 +915,7 @@ class RandomForestClassifier:
         M_LEARNING_RATE = self.dlg.Model_Learning_rate.value()
 
         # Enable Batch norm
-        if checkBox_4.isChecked():
+        if self.dlg.checkBox_4.isChecked():
             M_BATCH_NORM = True
         else:
             M_BATCH_NORM = False
@@ -982,6 +1143,14 @@ class RandomForestClassifier:
         with open(json_path, 'w') as json_file:
             json_file.write(model_architecture)
 
+    def UNET_train(self):
+        IMG_ADD = self.dlg.Train_img_add.filePath()
+        IMG_VLABEL_ADD = self.dlg.Train_img_label.filePath()
+
+        Resampled = self.resampler(IMG_ADD, IMG_VLABEL_ADD)
+
+
+
     # -------------------------------------------WORKFLOW---------------------------------------------------------
     def parameterenabling(self):
         i = self.dlg.Method_comboBox.currentIndex()
@@ -1000,6 +1169,19 @@ class RandomForestClassifier:
             # self.dlg.HiddenLayer_comboBox.setEnabled(True)
 
     def parameterenabling1(self):
+        i = self.dlg.Method_comboBox_3.currentIndex()
+        print(i)
+        if i == 0:
+            self.dlg.train_RFC_trees.setEnabled(True)
+            self.dlg.train_RFC_Depth.setEnabled(True)
+
+        if i == 1:
+            self.dlg.train_RFC_trees.setEnabled(False)
+            self.dlg.train_RFC_Depth.setEnabled(False)
+
+        return i
+
+    def parameterenabling2(self):
         i = self.dlg.Classifier_comboBox.currentIndex()
         print(i)
         if i == 0:
@@ -1009,6 +1191,17 @@ class RandomForestClassifier:
             self.dlg.input_img_box_6.setEnabled(False)
 
         return i
+
+    def Run_Train(self):
+        i = self.dlg.Method_comboBox_3.currentIndex()
+        print(i)
+        if i == 0:
+            self.rfc_train()
+
+        if i == 1:
+            # self.print_check()
+            self.svm_train()
+
 
     def Run_Classifier(self):
         i = self.dlg.Classifier_comboBox.currentIndex()
@@ -1069,7 +1262,7 @@ class RandomForestClassifier:
         # self.dlg.testButton.clicked.connect(QMessageBox(self.iface.mainWindow(), 'Reverse Geocoding Error', 'Wrong Format!\nExiting...'))
         # print(IMG_ADD)
 
-        self.dlg.Classifier_comboBox.activated.connect(self.parameterenabling1)
+        self.dlg.Classifier_comboBox.activated.connect(self.parameterenabling2)
         self.dlg.RunClassifier_Button.clicked.connect(self.Run_Classifier)
 
         # self.dlg.RunClassifier_Button.clicked.connect(self.merge)
@@ -1092,9 +1285,12 @@ class RandomForestClassifier:
 
         # ----------------------------Train TAB-------------------------------------------------------
 
-        self.dlg.train_button.clicked.connect(self.rfc_train)
+        self.dlg.Method_comboBox_3.activated.connect(self.parameterenabling1)
+        self.dlg.train_button.clicked.connect(self.Run_Train)
 
         # --------------------------------------------------------------------------------------------
+
+        self.dlg.Train_Button_2.clicked.connect(self.UNET_train)
 
         # Run the dialog event loop
         result = self.dlg.exec_()
