@@ -426,16 +426,18 @@ class RandomForestClassifier:
         class_prediction = class_prediction.reshape(img[:, :, 0].shape)
         print(class_prediction.shape)
 
-        geotrans = img_ds.GetGeoTransform()
-        proj = img_ds.GetProjection()
 
-        fname = 'Image_classified.tif'
 
         # fname = self.dlg.input_img_box_3.filePath()
 
         # self.array2raster(fname, geotrans, proj, class_prediction)
 
         # To convert array to raster
+
+        geotrans = img_ds.GetGeoTransform()
+        proj = img_ds.GetProjection()
+        fname = 'Image_classified.tif'
+
         cols = class_prediction.shape[1]
         rows = class_prediction.shape[0]
         driver = gdal.GetDriverByName('GTiff')
@@ -518,10 +520,6 @@ class RandomForestClassifier:
 
         self.dlg.Clfr_progressBar.setValue(100)
 
-
-
-
-
     def UNET_Classifier(self):
 
         import gdal
@@ -584,6 +582,117 @@ class RandomForestClassifier:
 
         plt.imshow(pred_bin)
         plt.show()
+
+        self.dlg.Clfr_progressBar.setValue(100)
+
+
+    def SatNet_Classifier(self):
+
+        from osgeo import gdal, gdal_array
+        import numpy as np
+        import matplotlib.pyplot as plt
+        import os
+
+        try:
+            import tensorflow as tf
+            from keras.models import Model, load_model, model_from_json
+            from keras.preprocessing.image import img_to_array, load_img
+
+        except ImportError:
+            print("tensorflow not present\nInstalling...")
+            import pip
+            pip.main(["install", "--user", "tensorflow"])
+
+            import tensorflow as tf
+            from keras.models import Model, load_model, model_from_json
+            from keras.preprocessing.image import img_to_array, load_img
+
+        try:
+            from skimage.transform import resize
+
+        except ImportError:
+            print("scikit-image package not present\nInstalling...")
+            import pip
+            pip.main(["install", "--user", "scikit-image"])
+
+            from skimage.transform import resize
+
+        self.dlg.Clfr_progressBar.setValue(30)
+
+        THRESHOLD = 0.5
+
+        # TILES_ADD = "C:\\Users\\Atishay\\Desktop\\Img/"
+        TILES_ADD = self.dlg.input_img_box.filePath()
+        MODEL_ADD = self.dlg.input_img_box_2.filePath()
+        H5_ADD = self.dlg.input_img_box_6.filePath()
+
+        with open(MODEL_ADD, 'r') as json_file:
+            loaded_nnet = json_file.read()
+
+        save_model = tf.keras.models.model_from_json(loaded_nnet)
+        save_model.load_weights(H5_ADD)
+
+        for tile in os.listdir(TILES_ADD):
+            if tile.endswith(".tif"):
+                IMG_ADD = os.path.join(TILES_ADD, tile)
+
+                print('Processing: ', IMG_ADD)
+
+                #To open the image:
+                img_ds = gdal.Open(IMG_ADD, gdal.GA_ReadOnly)
+
+                img = np.zeros((img_ds.RasterYSize, img_ds.RasterXSize, img_ds.RasterCount),
+                               gdal_array.GDALTypeCodeToNumericTypeCode(img_ds.GetRasterBand(1).DataType))
+
+                for b in range(img.shape[2]):
+                    img[:, :, b] = img_ds.GetRasterBand(b + 1).ReadAsArray()
+
+                x_img = img
+
+        #----------------------------TAKE NOTE HERE ON INPUT SIZE-----------------------
+                # x_img = resize(x_img, (64, 64), mode='constant', preserve_range=True)
+                # x_img.shape
+
+                self.dlg.Clfr_progressBar.setValue(50)
+
+
+
+                self.dlg.Clfr_progressBar.setValue(70)
+
+                #------------------TAKE NOTE HERE ON OUTPUT DIM-----------------
+
+                #pred = save_model.predict(np.expand_dims(x_img, axis=0), verbose=1)[0, :, :, 0]  # [ : : ] to squeeze the image dimension equiv to pred[0].squeeze()
+
+                x_img1 = np.expand_dims(x_img, axis=0)
+                pred_bin = save_model.predict(x_img1, verbose=1)
+                img_class = pred_bin.argmax() + 1
+
+                self.dlg.Clfr_progressBar.setValue(90)
+
+
+                print(img_class)
+
+                out_img = np.zeros((img_ds.RasterYSize, img_ds.RasterXSize))
+                out_img[:, :] = 255/img_class
+
+
+                geotrans = img_ds.GetGeoTransform()
+                proj = img_ds.GetProjection()
+
+                if not os.path.exists('Tiles'):
+                    os.makedirs('Tiles')
+                fname = 'Tiles/' + str(tile)
+
+                cols = out_img.shape[1]
+                rows = out_img.shape[0]
+                driver = gdal.GetDriverByName('GTiff')
+                outRaster = driver.Create(fname, cols, rows, 1, gdal.GDT_Byte)
+                outRaster.SetGeoTransform(geotrans)
+                outRaster.SetProjection(proj)
+                outband = outRaster.GetRasterBand(1)
+                outband.WriteArray(out_img)
+                outband.FlushCache()
+
 
         self.dlg.Clfr_progressBar.setValue(100)
 
@@ -1186,8 +1295,14 @@ class RandomForestClassifier:
         print(i)
         if i == 0:
             self.dlg.input_img_box_6.setEnabled(True)
+            self.dlg.input_img_box.setStorageMode(0)
+            # print(m)
 
         if i == 1:
+            self.dlg.input_img_box_6.setEnabled(True)
+            self.dlg.input_img_box.setStorageMode(1)
+
+        if i == 2:
             self.dlg.input_img_box_6.setEnabled(False)
 
         return i
@@ -1210,6 +1325,9 @@ class RandomForestClassifier:
             self.UNET_Classifier()
 
         if i == 1:
+            self.SatNet_Classifier()
+
+        if i == 2:
             # self.print_check()
             self.randomForest()
 
@@ -1230,7 +1348,7 @@ class RandomForestClassifier:
                                       'SEPERATE': 'False', 'DATA_TYPE': 1, 'NODATA_INPUT': None, 'NODATA_OUTPUT': None,
                                       'OPTIONS': 'High Compression', 'EXTRA': 'None',
                                       'OUTPUT': str(output_path) + '/' + 'Merge' + '.tif'})
-        print("All Done !!")
+        print("Tiles Merged!!")
 
     # --------------------------------------------DIALOG BOX------------------------------------------------------
 
