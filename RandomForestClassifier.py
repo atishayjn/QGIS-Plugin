@@ -585,7 +585,6 @@ class RandomForestClassifier:
 
         self.dlg.Clfr_progressBar.setValue(100)
 
-
     def SatNet_Classifier(self):
 
         from osgeo import gdal, gdal_array
@@ -1255,9 +1254,59 @@ class RandomForestClassifier:
     def UNET_train(self):
         IMG_ADD = self.dlg.Train_img_add.filePath()
         IMG_VLABEL_ADD = self.dlg.Train_img_label.filePath()
+        MODEL_ADD = self.dlg.Train_model.filePath()
 
-        Resampled = self.resampler(IMG_ADD, IMG_VLABEL_ADD)
+        VAL_SPLIT = 0.2
 
+        img_ids = os.listdir(IMG_ADD)
+
+        X = np.zeros((len(img_ids), IMG_HEIGHT,IMG_WIDTH, 3), dtype=np.float32)
+        y = np.zeros((len(img_ids), IMG_HEIGHT, IMG_WIDTH,1), dtype=np.float32)
+
+        print("Loading Data...")
+        for idx, img_id in enumerate(img_ids):
+            # Load Images
+
+            img_path = os.path.join(IMG_ADD, img_id)
+            mask_path = os.path.join(IMG_VLABEL_ADD, img_id[:-1])
+
+            x_img = img_to_array(load_img(fpath))
+            x_img = resize(x_img, (512, 512), mode = 'constant', preserve_range = True)
+            # Load masks
+            mask = img_to_array(load_img(mask_path, color_mode = "grayscale"))
+            mask = resize(mask, (512, 512, 1), mode = 'constant', preserve_range = True)
+            # Save images
+            X[idx] = x_img
+            y[idx] = (mask/255)>0
+            if idx%10 == 0:
+                print('#', end='')
+
+        # Train-Val Split
+        X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=VAL_SPLIT, random_state=0)
+
+        print("\nData Loaded")
+
+        # Free up ram
+        del X
+        del y
+        del img_ids
+
+        with open(MODEL_ADD, 'r') as json_file:
+            loaded_nnet = json_file.read()
+
+        save_model = tf.keras.models.model_from_json(loaded_nnet)
+
+        save_model.fit(X_train, 
+                        y_train,
+                        validation_data = (X_val, y_val),
+                        validation_freq = 5,
+                        batch_size=BATCH_SIZE,
+                        epochs=NUM_EPOCHS,
+                        )
+
+        weight_path = 'UNET_Model_Weights.h5'
+
+        save_model.save_weights(weight_path)
 
 
     # -------------------------------------------WORKFLOW---------------------------------------------------------
@@ -1295,12 +1344,11 @@ class RandomForestClassifier:
         print(i)
         if i == 0:
             self.dlg.input_img_box_6.setEnabled(True)
-            self.dlg.input_img_box.setStorageMode(0)
-            # print(m)
+            self.dlg.input_img_box.setStorageMode(0)    #To take file as input
 
         if i == 1:
             self.dlg.input_img_box_6.setEnabled(True)
-            self.dlg.input_img_box.setStorageMode(1)
+            self.dlg.input_img_box.setStorageMode(1)    #To take folders as input
 
         if i == 2:
             self.dlg.input_img_box_6.setEnabled(False)
@@ -1316,7 +1364,6 @@ class RandomForestClassifier:
         if i == 1:
             # self.print_check()
             self.svm_train()
-
 
     def Run_Classifier(self):
         i = self.dlg.Classifier_comboBox.currentIndex()
@@ -1375,15 +1422,6 @@ class RandomForestClassifier:
         # show the dialog
         self.dlg.show()
 
-        # ----------------------------CLASSIFIER TAB----------------------------------------
-
-        # self.dlg.testButton.clicked.connect(QMessageBox(self.iface.mainWindow(), 'Reverse Geocoding Error', 'Wrong Format!\nExiting...'))
-        # print(IMG_ADD)
-
-        self.dlg.Classifier_comboBox.activated.connect(self.parameterenabling2)
-        self.dlg.RunClassifier_Button.clicked.connect(self.Run_Classifier)
-
-        # self.dlg.RunClassifier_Button.clicked.connect(self.merge)
         # --------------------Tiles Generation TAB----------------------------------------------
 
         # Stores entries from the input boxes
@@ -1400,15 +1438,24 @@ class RandomForestClassifier:
 
         # for enabeling parameter input widgets
         self.dlg.Method_comboBox.activated.connect(self.parameterenabling)
+        self.dlg.Train_Button_2.clicked.connect(self.UNET_train)
 
         # ----------------------------Train TAB-------------------------------------------------------
 
         self.dlg.Method_comboBox_3.activated.connect(self.parameterenabling1)
         self.dlg.train_button.clicked.connect(self.Run_Train)
 
-        # --------------------------------------------------------------------------------------------
+        # ----------------------------CLASSIFIER TAB----------------------------------------
 
-        self.dlg.Train_Button_2.clicked.connect(self.UNET_train)
+        # self.dlg.testButton.clicked.connect(QMessageBox(self.iface.mainWindow(), 'Reverse Geocoding Error', 'Wrong Format!\nExiting...'))
+        # print(IMG_ADD)
+
+        self.dlg.Classifier_comboBox.activated.connect(self.parameterenabling2)
+        self.dlg.RunClassifier_Button.clicked.connect(self.Run_Classifier)
+
+        # self.dlg.RunClassifier_Button.clicked.connect(self.merge)
+
+        # --------------------------------------------------------------------------------------------
 
         # Run the dialog event loop
         result = self.dlg.exec_()

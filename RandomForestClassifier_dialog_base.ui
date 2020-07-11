@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>3</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -737,7 +737,7 @@
        <property name="geometry">
         <rect>
          <x>100</x>
-         <y>150</y>
+         <y>180</y>
          <width>91</width>
          <height>16</height>
         </rect>
@@ -750,7 +750,7 @@
        <property name="geometry">
         <rect>
          <x>40</x>
-         <y>110</y>
+         <y>140</y>
          <width>91</width>
          <height>16</height>
         </rect>
@@ -763,7 +763,7 @@
        <property name="geometry">
         <rect>
          <x>320</x>
-         <y>110</y>
+         <y>140</y>
          <width>55</width>
          <height>16</height>
         </rect>
@@ -776,7 +776,7 @@
        <property name="geometry">
         <rect>
          <x>230</x>
-         <y>260</y>
+         <y>290</y>
          <width>73</width>
          <height>22</height>
         </rect>
@@ -831,7 +831,7 @@
        <property name="geometry">
         <rect>
          <x>100</x>
-         <y>200</y>
+         <y>230</y>
          <width>111</width>
          <height>16</height>
         </rect>
@@ -847,7 +847,7 @@
        <property name="geometry">
         <rect>
          <x>230</x>
-         <y>150</y>
+         <y>180</y>
          <width>63</width>
          <height>27</height>
         </rect>
@@ -860,7 +860,7 @@
        <property name="geometry">
         <rect>
          <x>40</x>
-         <y>260</y>
+         <y>290</y>
          <width>131</width>
          <height>20</height>
         </rect>
@@ -876,7 +876,7 @@
        <property name="geometry">
         <rect>
          <x>230</x>
-         <y>200</y>
+         <y>230</y>
          <width>51</width>
          <height>22</height>
         </rect>
@@ -936,7 +936,7 @@
        <property name="geometry">
         <rect>
          <x>430</x>
-         <y>110</y>
+         <y>140</y>
          <width>181</width>
          <height>22</height>
         </rect>
@@ -960,8 +960,8 @@
       <widget class="QPushButton" name="Train_Button">
        <property name="geometry">
         <rect>
-         <x>260</x>
-         <y>430</y>
+         <x>300</x>
+         <y>470</y>
          <width>93</width>
          <height>28</height>
         </rect>
@@ -974,7 +974,7 @@
        <property name="geometry">
         <rect>
          <x>30</x>
-         <y>320</y>
+         <y>350</y>
          <width>151</width>
          <height>16</height>
         </rect>
@@ -987,7 +987,7 @@
        <property name="geometry">
         <rect>
          <x>230</x>
-         <y>310</y>
+         <y>340</y>
          <width>271</width>
          <height>27</height>
         </rect>
@@ -1049,7 +1049,7 @@
        <property name="geometry">
         <rect>
          <x>80</x>
-         <y>370</y>
+         <y>400</y>
          <width>471</width>
          <height>23</height>
         </rect>
@@ -1061,14 +1061,40 @@
       <widget class="QPushButton" name="Train_Button_2">
        <property name="geometry">
         <rect>
-         <x>130</x>
-         <y>430</y>
+         <x>170</x>
+         <y>470</y>
          <width>93</width>
          <height>28</height>
         </rect>
        </property>
        <property name="text">
         <string>Test</string>
+       </property>
+      </widget>
+      <widget class="QgsFileWidget" name="Train_model">
+       <property name="geometry">
+        <rect>
+         <x>240</x>
+         <y>80</y>
+         <width>271</width>
+         <height>27</height>
+        </rect>
+       </property>
+       <property name="storageMode">
+        <enum>QgsFileWidget::GetDirectory</enum>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_43">
+       <property name="geometry">
+        <rect>
+         <x>40</x>
+         <y>80</y>
+         <width>151</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Model Address</string>
        </property>
       </widget>
      </widget>
