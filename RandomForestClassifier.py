@@ -323,6 +323,10 @@ class RandomForestClassifier:
                 self.dlg.Tile_progressBar.setValue(complete)
 
         label_path_v = self.dlg.Tiles_Input_2.filePath()
+
+        if (not label_path_v):
+            return
+
         revstr = label_path_v[::-1]
         splitrevstr = revstr.split('.')
         if splitrevstr[0] == 'ffit':
@@ -378,7 +382,7 @@ class RandomForestClassifier:
 
         from osgeo import gdal, gdal_array
         import numpy as np
-        import pickle
+        import pickle, subprocess
 
         try:
             from sklearn.model_selection import train_test_split
@@ -386,8 +390,10 @@ class RandomForestClassifier:
             from sklearn.metrics import confusion_matrix, classification_report
         except ImportError:
             print("scikit-learn package not present\nInstalling...")
-            import pip
-            pip.main(["install", "--user", "scikit-learn"])
+            # import pip
+            # pip.main(["install", "--user", "scikit-learn"])
+            subprocess.call("pip install --user scikit-learn", creationflags=subprocess.CREATE_NEW_CONSOLE)
+
 
             from sklearn.model_selection import train_test_split
             from sklearn.ensemble import RandomForestClassifier
@@ -454,7 +460,7 @@ class RandomForestClassifier:
 
         from osgeo import gdal, gdal_array
         import numpy as np
-        import pickle
+        import pickle, subprocess
 
         try:
             from sklearn.model_selection import train_test_split
@@ -462,8 +468,9 @@ class RandomForestClassifier:
             from sklearn.metrics import confusion_matrix, classification_report
         except ImportError:
             print("scikit-learn package not present\nInstalling...")
-            import pip
-            pip.main(["install", "--user", "scikit-learn"])
+            # import pip
+            # pip.main(["install", "--user", "scikit-learn"])
+            subprocess.call("pip install --user scikit-learn", creationflags=subprocess.CREATE_NEW_CONSOLE)
 
             from sklearn.model_selection import train_test_split
             from sklearn.svm import SVC
@@ -533,8 +540,10 @@ class RandomForestClassifier:
 
         except ImportError:
             print("tensorflow not present\nInstalling...")
-            import pip
-            pip.main(["install", "--user", "tensorflow"])
+            # import pip
+            # pip.main(["install", "--user", "tensorflow"])
+
+            subprocess.call("pip install --user tensorflow", creationflags=subprocess.CREATE_NEW_CONSOLE)
 
             import tensorflow as tf
             from keras.models import Model, load_model, model_from_json
@@ -545,8 +554,10 @@ class RandomForestClassifier:
 
         except ImportError:
             print("scikit-image package not present\nInstalling...")
-            import pip
-            pip.main(["install", "--user", "scikit-image"])
+            # import pip
+            # pip.main(["install", "--user", "scikit-image"])
+
+            subprocess.call("pip install --user scikit-image", creationflags=subprocess.CREATE_NEW_CONSOLE)
 
             from skimage.transform import resize
 
@@ -599,8 +610,10 @@ class RandomForestClassifier:
 
         except ImportError:
             print("tensorflow not present\nInstalling...")
-            import pip
-            pip.main(["install", "--user", "tensorflow"])
+            # import pip
+            # pip.main(["install", "--user", "tensorflow"])
+
+            subprocess.call("pip install --user tensorflow", creationflags=subprocess.CREATE_NEW_CONSOLE)
 
             import tensorflow as tf
             from keras.models import Model, load_model, model_from_json
@@ -611,8 +624,10 @@ class RandomForestClassifier:
 
         except ImportError:
             print("scikit-image package not present\nInstalling...")
-            import pip
-            pip.main(["install", "--user", "scikit-image"])
+            # import pip
+            # pip.main(["install", "--user", "scikit-image"])
+
+            subprocess.call("pip install --user scikit-image", creationflags=subprocess.CREATE_NEW_CONSOLE)
 
             from skimage.transform import resize
 
@@ -698,6 +713,48 @@ class RandomForestClassifier:
     # -------------------------------------------TRAIN---------------------------------------------------------
     def rfc_train(self):
 
+        #Store and Check Inputs---------------------------------------------------------------
+        IMG_ADD = self.dlg.train_img_add.filePath()
+        IMG_VLABEL_ADD = self.dlg.train_img_label.filePath()
+
+        if (not IMG_ADD):
+            print("Enter Input")
+            QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the adress of Image to be classified.')
+            return
+        if (not IMG_VLABEL_ADD):
+            print("Enter Input")
+            QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of Image Label (Annotation).')
+            return
+        
+        VALIDATION_SPLIT = self.dlg.train_valRatio.currentText()  # TO BE TAKEN FROM USER (Train Val Ratio)
+
+        if (not VALIDATION_SPLIT):
+            VALIDATION_SPLIT = 0.2
+        else:
+            VALIDATION_SPLIT = float(VALIDATION_SPLIT)
+
+
+        num_trees = self.dlg.train_RFC_trees.value()
+        if (not num_trees):
+            num_trees = int(self.dlg.train_RFC_trees.defaultValue())
+        else:
+            try:
+                num_trees = abs(int(num_trees))
+            except ValueError:
+                QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter a positive number for Number of Trees.')
+                return            
+
+        Depth = self.dlg.train_RFC_Depth.value()
+        if (not Depth):
+            Depth = None
+        else:
+            try:
+                Depth = abs(int(Depth))
+            except ValueError:
+                QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter a positive number for Depth or leave blank for maximum depth.')
+                return   
+
+        #import libraries-----------------------------------------------------------------
         from osgeo import gdal, gdal_array
         import numpy as np
         import pickle
@@ -708,51 +765,24 @@ class RandomForestClassifier:
             from sklearn.metrics import confusion_matrix, classification_report
         except ImportError:
             print("scikit-learn package not present\nInstalling...")
-            import pip
-            pip.main(["install", "--user", "scikit-learn"])
+            # import pip
+            # pip.main(["install", "--user", "scikit-learn"])
+            subprocess.call("pip install --user scikit-learn", creationflags=subprocess.CREATE_NEW_CONSOLE)
 
             from sklearn.model_selection import train_test_split
             from sklearn.ensemble import RandomForestClassifier
             from sklearn.metrics import confusion_matrix, classification_report
 
-        self.dlg.train_progressBar.setValue(20)
+        self.dlg.train_progressBar.setValue(20) # For progress bar
 
-        IMG_ADD = self.dlg.train_img_add.filePath()
-        IMG_VLABEL_ADD = self.dlg.train_img_label.filePath()
+        #ADD AN OPTION HERE TO CHECK IF THE LABEL FILE IS ALREADY RASTER
 
         IMG_LABEL_ADD = self.vector2raster(IMG_VLABEL_ADD)
         RESAMPLED_IMG_LABEL1 = self.resampler(IMG_ADD, IMG_LABEL_ADD)
 
-        VALIDATION_SPLIT = self.dlg.train_valRatio.currentText()  # TO BE TAKEN FROM USER (Train Val Ratio)
-
-        if (not VALIDATION_SPLIT):
-            VALIDATION_SPLIT = 0.2
-        else:
-            VALIDATION_SPLIT = float(VALIDATION_SPLIT)
-
-        if (not IMG_ADD):
-            print("Enter Input")
-            QMessageBox.critical(self.dlg, 'No Input', 'Please select the image to be Trained.')
-            return
-        if (not IMG_LABEL_ADD):
-            print("Enter Input")
-            QMessageBox.critical(self.dlg, 'No Input', 'Please input the Label.')
-            return
-
-        num_trees = self.dlg.train_RFC_trees.value()
-        if (not num_trees):
-            num_trees = int(self.dlg.train_RFC_trees.defaultValue())
-        else:
-            num_trees = int(num_trees)
-
-        Depth = self.dlg.train_RFC_Depth.value()
-        if (not Depth):
-            Depth = None
-        else:
-            Depth = int(Depth)
-
         self.dlg.train_progressBar.setValue(40)
 
+        #LOAD IMAGES
         img_ds = gdal.Open(IMG_ADD, gdal.GA_ReadOnly)
 
         img = np.zeros((img_ds.RasterYSize, img_ds.RasterXSize, img_ds.RasterCount),
@@ -761,18 +791,19 @@ class RandomForestClassifier:
         for b in range(img.shape[2]):
             img[:, :, b] = img_ds.GetRasterBand(b + 1).ReadAsArray()
 
-        print(img.shape)
+        print('Size of Input Image: ', img.shape)
 
         roi_ds = gdal.Open(RESAMPLED_IMG_LABEL1, gdal.GA_ReadOnly)
 
         roi = roi_ds.GetRasterBand(1).ReadAsArray().astype(np.uint8)
 
-        print(roi.shape)
+        print('Size of Annotation Image: ', roi.shape)
 
         self.dlg.train_progressBar.setValue(50)
 
         np.vstack(np.unique(roi, return_counts=True)).T
 
+        #Extracting Annotated region for training
         features = img[roi > 0, :]
         labels = roi[roi > 0]
         print(features.shape)
@@ -781,8 +812,8 @@ class RandomForestClassifier:
         X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=VALIDATION_SPLIT,
                                                             random_state=0)
 
-        print(X_train.shape)
-        print(X_test.shape)
+        print('Dimensions of Training Data: ', X_train.shape)
+        print('Dimensions of Testing Data: ', X_test.shape)
 
         self.dlg.train_progressBar.setValue(60)
 
@@ -810,8 +841,9 @@ class RandomForestClassifier:
             from sklearn.metrics import confusion_matrix, classification_report
         except ImportError:
             print("scikit-learn package not present\nInstalling...")
-            import pip
-            pip.main(["install", "--user", "scikit-learn"])
+            # import pip
+            # pip.main(["install", "--user", "scikit-learn"])
+            subprocess.call("pip install --user scikit-learn", creationflags=subprocess.CREATE_NEW_CONSOLE)
 
             from sklearn.model_selection import train_test_split
             from sklearn.svm import SVC
@@ -892,27 +924,64 @@ class RandomForestClassifier:
     def UNET_build(self):
 
         # imports-----------------------------------------------------------
-        import tensorflow as tf
-        import tensorflow.keras.backend as K
-        from tensorflow.keras.layers import (Dropout,
-                                             Conv2D,
-                                             MaxPooling2D,
-                                             Conv2DTranspose,
-                                             concatenate,
-                                             BatchNormalization,
-                                             Activation,
-                                             Conv2DTranspose,
-                                             Add)
-        from tensorflow.keras import Input
-        from tensorflow.keras.callbacks import (EarlyStopping,
-                                                ModelCheckpoint,
-                                                ReduceLROnPlateau)
-        from tensorflow.keras.preprocessing.image import (ImageDataGenerator,
-                                                          array_to_img,
-                                                          img_to_array,
-                                                          load_img)
+        try:
+            import tensorflow as tf
+            import tensorflow.keras.backend as K
+            from tensorflow.keras.layers import (Dropout,
+                                                 Conv2D,
+                                                 MaxPooling2D,
+                                                 Conv2DTranspose,
+                                                 concatenate,
+                                                 BatchNormalization,
+                                                 Activation,
+                                                 Conv2DTranspose,
+                                                 Add)
+            from tensorflow.keras import Input
+            from tensorflow.keras.callbacks import (EarlyStopping,
+                                                    ModelCheckpoint,
+                                                    ReduceLROnPlateau)
+            from tensorflow.keras.preprocessing.image import (ImageDataGenerator,
+                                                              array_to_img,
+                                                              img_to_array,
+                                                              load_img)
 
-        from skimage.transform import resize
+        except ImportError:
+            print("tensorflow not present\nInstalling...")
+            # import pip
+            # pip.main(["install", "--user", "tensorflow"])
+
+            subprocess.call("pip install --user tensorflow", creationflags=subprocess.CREATE_NEW_CONSOLE)
+
+            import tensorflow as tf
+            import tensorflow.keras.backend as K
+            from tensorflow.keras.layers import (Dropout,
+                                                 Conv2D,
+                                                 MaxPooling2D,
+                                                 Conv2DTranspose,
+                                                 concatenate,
+                                                 BatchNormalization,
+                                                 Activation,
+                                                 Conv2DTranspose,
+                                                 Add)
+            from tensorflow.keras import Input
+            from tensorflow.keras.callbacks import (EarlyStopping,
+                                                    ModelCheckpoint,
+                                                    ReduceLROnPlateau)
+            from tensorflow.keras.preprocessing.image import (ImageDataGenerator,
+                                                              array_to_img,
+                                                              img_to_array,
+                                                              load_img)
+        try:
+            from skimage.transform import resize
+
+        except ImportError:
+            print("scikit-image package not present\nInstalling...")
+            # import pip
+            # pip.main(["install", "--user", "scikit-image"])
+
+            subprocess.call("pip install --user scikit-image", creationflags=subprocess.CREATE_NEW_CONSOLE)
+
+            from skimage.transform import resize       
 
         # Model Parameters[From Input Fields]--------------------------------------------------
 
@@ -1252,6 +1321,9 @@ class RandomForestClassifier:
             json_file.write(model_architecture)
 
     def UNET_train(self):
+
+        #ADD IMPORT STATEMENTS---------------------------------------------
+
         IMG_ADD = self.dlg.Train_img_add.filePath()
         IMG_VLABEL_ADD = self.dlg.Train_img_label.filePath()
         MODEL_ADD = self.dlg.Train_model.filePath()
