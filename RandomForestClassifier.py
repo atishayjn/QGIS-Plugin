@@ -276,18 +276,28 @@ class RandomForestClassifier:
     def tiles(self):
 
         in_path = self.dlg.Tiles_Input.filePath()
+        out_path = self.dlg.Tiles_Output.filePath()
 
         if (not in_path):
             print("Enter Input")
             QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of the image to be splitted.')
+            return        
+
+        if (not out_path):
+            print("Enter Input")
+            QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of Output Location to store tiles.')
             return
 
-        # in_path = 'C:/forest.tif'
-        out_path = 'C:/Users/Atishay/Desktop/Images/'
         file_name = 'Tile'
 
-        if not os.path.exists(out_path):
-            os.makedirs(out_path)
+        img_out_path = os.path.join(out_path, "Images") 
+
+        if not os.path.exists(img_out_path):
+            os.makedirs(img_out_path)
+
+        #GIVE OPTION TO OVERWRITE HERE AND WARN
+
+        files_out_path = os.path.join(img_out_path, file_name)
 
         tile_size_x = self.dlg.TileSizeX.value()
         tile_size_y = self.dlg.TileSizeY.value()
@@ -307,21 +317,28 @@ class RandomForestClassifier:
         complete = 0
         self.dlg.Tile_progressBar.setValue(complete)
 
-        CREATE_NO_WINDOW = 0x08000000
+        # CREATE_NO_WINDOW = 0x08000000
 
         # for i in range(5):
         band = ds.GetRasterBand(1)
         xsize = band.XSize
         ysize = band.YSize
+        print(band)
+        print(xsize)
+        print(ysize)
+
+        inc = (tile_size_x*tile_size_y)/(xsize*ysize)*100
 
         for i in range(0, xsize, tile_size_x):
             for j in range(0, ysize, tile_size_y):
                 com_string = "gdal_translate -of GTIFF -srcwin " + str(i) + ", " + str(j) + ", " + str(
-                    tile_size_x) + ", " + str(tile_size_y) + " " + str(in_path) + " " + str(out_path) + str(
-                    file_name) + str(i) + "_" + str(j) + ".tif"
-                subprocess.call(com_string, creationflags=CREATE_NO_WINDOW)
-                complete = complete + 20
+                    tile_size_x) + ", " + str(tile_size_y) + " " + str(in_path) + " " + str(files_out_path) + str(
+                    i) + "_" + str(j) + ".tif"
+                subprocess.call(com_string, creationflags=subprocess.CREATE_NO_WINDOW)
+                complete = complete + inc
                 self.dlg.Tile_progressBar.setValue(complete)
+
+        self.dlg.Tile_progressBar.setValue(100)
 
         label_path_v = self.dlg.Tiles_Input_2.filePath()
 
@@ -336,11 +353,15 @@ class RandomForestClassifier:
             label_path_r = self.vector2raster(label_path_v)
             label_path = self.resampler(in_path, label_path_r)
 
-        out_path = 'C:/Users/Atishay/Desktop/Label/'
+        label_out_path = os.path.join(out_path, "Labels")
         file_name = 'Tile'
 
-        if not os.path.exists(out_path):
-            os.makedirs(out_path)
+        if not os.path.exists(label_out_path):
+            os.makedirs(label_out_path)
+
+        #GIVE OPTION TO OVERWRITE HERE AND WARN
+
+        file_out_path = os.path.join(label_out_path, file_name)
 
         tile_size_x = self.dlg.TileSizeX.value()
         tile_size_y = self.dlg.TileSizeY.value()
@@ -360,29 +381,30 @@ class RandomForestClassifier:
         complete = 0
         self.dlg.Tile_progressBar.setValue(complete)
 
-        CREATE_NO_WINDOW = 0x08000000
+        # CREATE_NO_WINDOW = 0x08000000
 
         # for i in range(5):
         band = ds.GetRasterBand(1)
         xsize = band.XSize
         ysize = band.YSize
 
+        inc = (tile_size_x*tile_size_y)/(xsize*ysize)*100
+
         for i in range(0, xsize, tile_size_x):
             for j in range(0, ysize, tile_size_y):
                 com_string = "gdal_translate -of GTIFF -srcwin " + str(i) + ", " + str(j) + ", " + str(
-                    tile_size_x) + ", " + str(tile_size_y) + " " + str(label_path) + " " + str(out_path) + str(
-                    file_name) + str(i) + "_" + str(j) + ".tif"
-                subprocess.call(com_string, creationflags=CREATE_NO_WINDOW)
-                complete = complete + 20
+                    tile_size_x) + ", " + str(tile_size_y) + " " + str(label_path) + " " + str(file_out_path) + str(
+                    i) + "_" + str(j) + ".tif"
+                subprocess.call(com_string, creationflags=subprocess.CREATE_NO_WINDOW)
+                complete = complete + inc
                 self.dlg.Tile_progressBar.setValue(complete)
+        self.dlg.Tile_progressBar.setValue(100)
 
     # -------------------------------------------CLASSIFIERS---------------------------------------------------------
 
 
     def svm(self):
 
-        from osgeo import gdal, gdal_array
-        import numpy as np
         import pickle, subprocess
 
         try:
@@ -684,8 +706,6 @@ class RandomForestClassifier:
 
 
         self.dlg.Clfr_progressBar.setValue(100)
-
-
 
 
     def randomForest(self):
@@ -1580,7 +1600,7 @@ class RandomForestClassifier:
         self.dlg.classifier_output.setEnabled(True)
         self.dlg.train_output.setEnabled(True)
         self.dlg.Output_Field_2.setEnabled(False)
-        self.dlg.Tiles_Output.setEnabled(False)
+        self.dlg.Tiles_Output.setEnabled(True)
 
         # show the dialog
         self.dlg.show()
