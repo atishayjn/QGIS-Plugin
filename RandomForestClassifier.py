@@ -30,7 +30,8 @@ from qgis.core import QgsVectorLayer, QgsProject
 from .resources import *
 # Import the code for the dialog
 from .RandomForestClassifier_dialog import RandomForestClassifierDialog
-import gdal
+from osgeo import gdal, gdal_array
+import numpy as np
 import os
 import subprocess
 import os.path
@@ -278,7 +279,7 @@ class RandomForestClassifier:
 
         if (not in_path):
             print("Enter Input")
-            QMessageBox.critical(self.dlg, 'No Input', 'Please select the image to be splitted.')
+            QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of the image to be splitted.')
             return
 
         # in_path = 'C:/forest.tif'
@@ -377,84 +378,6 @@ class RandomForestClassifier:
 
     # -------------------------------------------CLASSIFIERS---------------------------------------------------------
 
-    def randomForest(self):
-        # import statements
-
-        from osgeo import gdal, gdal_array
-        import numpy as np
-        import pickle, subprocess
-
-        try:
-            from sklearn.model_selection import train_test_split
-            from sklearn.ensemble import RandomForestClassifier
-            from sklearn.metrics import confusion_matrix, classification_report
-        except ImportError:
-            print("scikit-learn package not present\nInstalling...")
-            # import pip
-            # pip.main(["install", "--user", "scikit-learn"])
-            subprocess.call("pip install --user scikit-learn", creationflags=subprocess.CREATE_NEW_CONSOLE)
-
-
-            from sklearn.model_selection import train_test_split
-            from sklearn.ensemble import RandomForestClassifier
-            from sklearn.metrics import confusion_matrix, classification_report
-
-
-
-        self.dlg.Clfr_progressBar.setValue(30)
-
-        IMAGE_ADD = self.dlg.input_img_box.filePath()
-        MODEL_ADD = self.dlg.input_img_box_2.filePath()
-        # OUTPUT_ADD = fp3
-
-        # #To open the image:
-        img_ds = gdal.Open(IMAGE_ADD, gdal.GA_ReadOnly)
-
-        img = np.zeros((img_ds.RasterYSize, img_ds.RasterXSize, img_ds.RasterCount),
-                       gdal_array.GDALTypeCodeToNumericTypeCode(img_ds.GetRasterBand(1).DataType))
-
-        for b in range(img.shape[2]):
-            img[:, :, b] = img_ds.GetRasterBand(b + 1).ReadAsArray()
-
-        print(img.shape)
-
-        with open(MODEL_ADD, 'rb') as f:
-            model = pickle.load(f)
-
-            img_as_array = img.reshape(-1, img.shape[2])
-            print('Reshaped from {n} to {o}'.format(o=img.shape,
-                                                    n=img_as_array.shape))
-
-        self.dlg.Clfr_progressBar.setValue(60)
-
-        class_prediction = model.predict(img_as_array)
-
-        class_prediction = class_prediction.reshape(img[:, :, 0].shape)
-        print(class_prediction.shape)
-
-
-
-        # fname = self.dlg.input_img_box_3.filePath()
-
-        # self.array2raster(fname, geotrans, proj, class_prediction)
-
-        # To convert array to raster
-
-        geotrans = img_ds.GetGeoTransform()
-        proj = img_ds.GetProjection()
-        fname = 'Image_classified.tif'
-
-        cols = class_prediction.shape[1]
-        rows = class_prediction.shape[0]
-        driver = gdal.GetDriverByName('GTiff')
-        outRaster = driver.Create(fname, cols, rows, 1, gdal.GDT_Byte)
-        outRaster.SetGeoTransform(geotrans)
-        outRaster.SetProjection(proj)
-        outband = outRaster.GetRasterBand(1)
-        outband.WriteArray(class_prediction)
-        outband.FlushCache()
-
-        self.dlg.Clfr_progressBar.setValue(100)
 
     def svm(self):
 
@@ -529,9 +452,18 @@ class RandomForestClassifier:
 
     def UNET_Classifier(self):
 
-        import gdal
-        import numpy as np
-        import matplotlib.pyplot as plt
+        #Store and check inputs
+
+        THRESHOLD = 0.5
+
+        TILES_ADD = self.dlg.input_img_box.filePath()
+        MODEL_ADD = self.dlg.input_img_box_2.filePath()
+        H5_ADD = self.dlg.input_img_box_6.filePath()
+        OUT_ADD = self.dlg.classifier_output.filePath()
+
+        tiles_merge = []
+
+        #import statements
 
         try:
             import tensorflow as tf
@@ -563,45 +495,88 @@ class RandomForestClassifier:
 
         self.dlg.Clfr_progressBar.setValue(30)
 
-        THRESHOLD = 0.5
+        #Load Tiles
+        for tile in os.listdir(TILES_ADD):
+            if tile.endswith(".tif"):
+                IMG_ADD = os.path.join(TILES_ADD, tile)
 
-        IMG_ADD = self.dlg.input_img_box.filePath()
-        MODEL_ADD = self.dlg.input_img_box_2.filePath()
-        H5_ADD = self.dlg.input_img_box_6.filePath()
+                print('Processing: ', IMG_ADD)
 
-        img = load_img(IMG_ADD)
-        x_img = img_to_array(img)
-        x_img = resize(x_img, (512, 512), mode='constant', preserve_range=True)
-        x_img.shape
+                img_ds = gdal.Open(IMG_ADD, gdal.GA_ReadOnly)
 
-        self.dlg.Clfr_progressBar.setValue(50)
+                img = np.zeros((img_ds.RasterYSize, img_ds.RasterXSize, img_ds.RasterCount),
+                               gdal_array.GDALTypeCodeToNumericTypeCode(img_ds.GetRasterBand(1).DataType))
 
-        with open(MODEL_ADD, 'r') as json_file:
-            loaded_nnet = json_file.read()
+                for b in range(img.shape[2]):
+                    img[:, :, b] = img_ds.GetRasterBand(b + 1).ReadAsArray()
 
-        save_model = tf.keras.models.model_from_json(loaded_nnet)
-        save_model.load_weights(H5_ADD)
+                x_img = resize(img, (512, 512), mode='constant', preserve_range=True)
 
-        self.dlg.Clfr_progressBar.setValue(70)
+                print(x_img)
 
-        pred = save_model.predict(np.expand_dims(x_img, axis=0), verbose=1)[0, :, :,
-               0]  # [ : : ] to squeeze the image dimension equiv to pred[0].squeeze()
 
-        pred_bin = np.where(pred > THRESHOLD, 1, 0)
+                self.dlg.Clfr_progressBar.setValue(50)
 
-        self.dlg.Clfr_progressBar.setValue(90)
+                with open(MODEL_ADD, 'r') as json_file:
+                    loaded_nnet = json_file.read()
 
-        plt.imshow(pred_bin)
-        plt.show()
+                save_model = tf.keras.models.model_from_json(loaded_nnet)
+                save_model.load_weights(H5_ADD)
+
+                self.dlg.Clfr_progressBar.setValue(70)
+
+                pred = save_model.predict(np.expand_dims(x_img, axis=0), verbose=1)[0, :, :,
+                       0]  # [ : : ] to squeeze the image dimension equiv to pred[0].squeeze()
+
+                pred_bin = np.where(pred > THRESHOLD, 1, 0)
+
+                self.dlg.Clfr_progressBar.setValue(90)
+
+                print(pred_bin.shape)
+
+                geotrans = img_ds.GetGeoTransform()
+                proj = img_ds.GetProjection()
+
+                temp_dir = 'QAi_Temp_Tiles'
+
+                if not os.path.exists(temp_dir):
+                    os.makedirs(temp_dir)
+                
+                fpath = os.path.join(temp_dir, str(tile))
+
+                cols = img.shape[1]
+                rows = img.shape[0]
+                pred_bin = resize(pred_bin, (rows, cols), mode='constant', preserve_range=True)
+                driver = gdal.GetDriverByName('GTiff')
+                outRaster = driver.Create(fpath, cols, rows, 1, gdal.GDT_Byte)
+                outRaster.SetGeoTransform(geotrans)
+                outRaster.SetProjection(proj)
+                outband = outRaster.GetRasterBand(1)
+                outband.WriteArray(pred_bin)
+                outband.FlushCache()
+
+                tiles_merge.append(fpath)
+
+        print('Image Saved.')
+
+        #MERGE TILES
+
+        save_file = 'Classified_Merged_Image.tif'
+
+        out_img = os.path.join(OUT_ADD, save_file)
+
+        processing.run("gdal:merge", {'INPUT': tiles_merge, 'PCT': 'False',
+                                      'SEPERATE': 'False', 'DATA_TYPE': 1, 'NODATA_INPUT': None, 'NODATA_OUTPUT': None,
+                                      'OPTIONS': 'High Compression', 'EXTRA': 'None',
+                                      'OUTPUT': out_img})
+        print("Tiles Merged!!")
 
         self.dlg.Clfr_progressBar.setValue(100)
 
+    
     def SatNet_Classifier(self):
 
-        from osgeo import gdal, gdal_array
-        import numpy as np
         import matplotlib.pyplot as plt
-        import os
 
         try:
             import tensorflow as tf
@@ -710,20 +685,127 @@ class RandomForestClassifier:
 
         self.dlg.Clfr_progressBar.setValue(100)
 
+
+
+
+    def randomForest(self):
+
+        #Store and Check Input---------------------------------------
+
+        IMAGE_ADD = self.dlg.input_img_box.filePath()
+        MODEL_ADD = self.dlg.input_img_box_2.filePath()
+        OUT_ADD = self.dlg.classifier_output.filePath()
+
+        if (not IMAGE_ADD):
+            QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of Image to be classified.')
+            return
+
+        if (not MODEL_ADD):
+            QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of saved model.')
+            return
+        
+        if (not OUT_ADD):
+            QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the output address.')
+            return
+
+        # import statements
+
+        from osgeo import gdal, gdal_array
+        import numpy as np
+        import pickle, subprocess
+
+        try:
+            from sklearn.model_selection import train_test_split
+            from sklearn.ensemble import RandomForestClassifier
+            from sklearn.metrics import confusion_matrix, classification_report
+        except ImportError:
+            print("scikit-learn package not present\nInstalling...")
+            # import pip
+            # pip.main(["install", "--user", "scikit-learn"])
+            subprocess.call("pip install --user scikit-learn", creationflags=subprocess.CREATE_NEW_CONSOLE)
+
+
+            from sklearn.model_selection import train_test_split
+            from sklearn.ensemble import RandomForestClassifier
+            from sklearn.metrics import confusion_matrix, classification_report
+
+
+        self.dlg.Clfr_progressBar.setValue(30)
+
+        # OUTPUT_ADD = fp3
+
+        # #To open the image:
+        img_ds = gdal.Open(IMAGE_ADD, gdal.GA_ReadOnly)
+
+        img = np.zeros((img_ds.RasterYSize, img_ds.RasterXSize, img_ds.RasterCount),
+                       gdal_array.GDALTypeCodeToNumericTypeCode(img_ds.GetRasterBand(1).DataType))
+
+        for b in range(img.shape[2]):
+            img[:, :, b] = img_ds.GetRasterBand(b + 1).ReadAsArray()
+
+        print('Dimensions of Input Image: ',img.shape)
+
+        with open(MODEL_ADD, 'rb') as f:
+            model = pickle.load(f)
+
+            img_as_array = img.reshape(-1, img.shape[2])
+            print('Reshaped from {n} to {o}'.format(o=img.shape,
+                                                    n=img_as_array.shape))
+
+        self.dlg.Clfr_progressBar.setValue(60)
+
+        class_prediction = model.predict(img_as_array)
+
+        class_prediction = class_prediction.reshape(img[:, :, 0].shape)
+        print(class_prediction.shape)
+
+
+
+        # fname = self.dlg.input_img_box_3.filePath()
+
+        # self.array2raster(fname, geotrans, proj, class_prediction)
+
+        # To convert array to raster
+
+        geotrans = img_ds.GetGeoTransform()
+        proj = img_ds.GetProjection()
+        fname = 'Image_classified.tif'
+
+        fpath = os.path.join(OUT_ADD, fname)
+
+        cols = class_prediction.shape[1]
+        rows = class_prediction.shape[0]
+        driver = gdal.GetDriverByName('GTiff')
+        outRaster = driver.Create(fpath, cols, rows, 1, gdal.GDT_Byte)
+        outRaster.SetGeoTransform(geotrans)
+        outRaster.SetProjection(proj)
+        outband = outRaster.GetRasterBand(1)
+        outband.WriteArray(class_prediction)
+        outband.FlushCache()
+
+        self.dlg.Clfr_progressBar.setValue(100)
+
+
+
     # -------------------------------------------TRAIN---------------------------------------------------------
     def rfc_train(self):
 
         #Store and Check Inputs---------------------------------------------------------------
         IMG_ADD = self.dlg.train_img_add.filePath()
         IMG_VLABEL_ADD = self.dlg.train_img_label.filePath()
+        OUT_ADD = self.dlg.train_output.filePath()
 
         if (not IMG_ADD):
             print("Enter Input")
-            QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the adress of Image to be classified.')
+            QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of Image to be classified.')
             return
         if (not IMG_VLABEL_ADD):
             print("Enter Input")
             QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of Image Label (Annotation).')
+            return
+        if (not OUT_ADD):
+            print("Enter Input")
+            QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address to save model.')
             return
         
         VALIDATION_SPLIT = self.dlg.train_valRatio.currentText()  # TO BE TAKEN FROM USER (Train Val Ratio)
@@ -753,6 +835,7 @@ class RandomForestClassifier:
             except ValueError:
                 QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter a positive number for Depth or leave blank for maximum depth.')
                 return   
+
 
         #import libraries-----------------------------------------------------------------
         from osgeo import gdal, gdal_array
@@ -825,7 +908,14 @@ class RandomForestClassifier:
         self.dlg.train_progressBar.setValue(80)
 
         filename = 'model_5band_plugged.sav'
-        pickle.dump(rf, open(filename, 'wb'))
+
+        file_path = os.path.join(OUT_ADD, filename)
+
+        try:
+            pickle.dump(rf, open(file_path, 'wb'))
+        except PermissionError:
+            QMessageBox.critical(self.dlg, 'Permission Denied', 'Unable to save the file in the specified location. Please choose a different address to save the file.')
+            return
 
         self.dlg.train_progressBar.setValue(100)
 
@@ -1380,7 +1470,7 @@ class RandomForestClassifier:
 
         save_model.save_weights(weight_path)
 
-
+ 
     # -------------------------------------------WORKFLOW---------------------------------------------------------
     def parameterenabling(self):
         i = self.dlg.Method_comboBox.currentIndex()
@@ -1416,14 +1506,15 @@ class RandomForestClassifier:
         print(i)
         if i == 0:
             self.dlg.input_img_box_6.setEnabled(True)
-            self.dlg.input_img_box.setStorageMode(0)    #To take file as input
+            self.dlg.input_img_box.setStorageMode(1)    #To take folder as input
 
         if i == 1:
             self.dlg.input_img_box_6.setEnabled(True)
-            self.dlg.input_img_box.setStorageMode(1)    #To take folders as input
+            self.dlg.input_img_box.setStorageMode(1)    #To take folder as input
 
         if i == 2:
             self.dlg.input_img_box_6.setEnabled(False)
+            self.dlg.input_img_box.setStorageMode(0)    #To take file as input
 
         return i
 
@@ -1486,8 +1577,8 @@ class RandomForestClassifier:
         self.dlg.Clfr_progressBar.setValue(0)
 
         # Temporary
-        self.dlg.input_img_box_3.setEnabled(False)
-        self.dlg.train_output.setEnabled(False)
+        self.dlg.classifier_output.setEnabled(True)
+        self.dlg.train_output.setEnabled(True)
         self.dlg.Output_Field_2.setEnabled(False)
         self.dlg.Tiles_Output.setEnabled(False)
 

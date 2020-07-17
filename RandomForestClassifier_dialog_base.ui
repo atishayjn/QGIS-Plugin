@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>632</width>
+    <width>633</width>
     <height>603</height>
    </rect>
   </property>
@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>4</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -249,41 +249,6 @@
        </property>
        <property name="value">
         <number>24</number>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_19">
-       <property name="geometry">
-        <rect>
-         <x>70</x>
-         <y>240</y>
-         <width>91</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>No. of bands:</string>
-       </property>
-      </widget>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox">
-       <property name="geometry">
-        <rect>
-         <x>170</x>
-         <y>240</y>
-         <width>62</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <property name="decimals">
-        <number>0</number>
-       </property>
-       <property name="minimum">
-        <double>1.000000000000000</double>
-       </property>
-       <property name="maximum">
-        <double>1.000000000000000</double>
-       </property>
-       <property name="value">
-        <double>1.000000000000000</double>
        </property>
       </widget>
       <widget class="QgsFileWidget" name="Tiles_Input_2">
@@ -1447,7 +1412,7 @@
         <number>24</number>
        </property>
       </widget>
-      <widget class="QgsFileWidget" name="input_img_box_3">
+      <widget class="QgsFileWidget" name="classifier_output">
        <property name="geometry">
         <rect>
          <x>220</x>
