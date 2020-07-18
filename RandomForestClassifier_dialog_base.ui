@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>633</width>
-    <height>603</height>
+    <width>643</width>
+    <height>634</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -99,7 +99,7 @@
       <widget class="QLabel" name="label_13">
        <property name="geometry">
         <rect>
-         <x>40</x>
+         <x>100</x>
          <y>280</y>
          <width>121</width>
          <height>31</height>
@@ -274,6 +274,19 @@
         <string>Label Address</string>
        </property>
       </widget>
+      <widget class="Line" name="line_4">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>130</y>
+         <width>541</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
      </widget>
      <widget class="QWidget" name="tab_6">
       <attribute name="title">
@@ -282,8 +295,8 @@
       <widget class="QPushButton" name="Build_Button">
        <property name="geometry">
         <rect>
-         <x>270</x>
-         <y>460</y>
+         <x>260</x>
+         <y>530</y>
          <width>93</width>
          <height>28</height>
         </rect>
@@ -314,6 +327,15 @@
          <height>27</height>
         </rect>
        </property>
+       <property name="placeholderText">
+        <string>3</string>
+       </property>
+       <property name="nullValue">
+        <string/>
+       </property>
+       <property name="defaultValue">
+        <string>3</string>
+       </property>
        <property name="qgisRelation" stdset="0">
         <string notr="true"/>
        </property>
@@ -326,6 +348,15 @@
          <width>63</width>
          <height>27</height>
         </rect>
+       </property>
+       <property name="placeholderText">
+        <string>1</string>
+       </property>
+       <property name="nullValue">
+        <string/>
+       </property>
+       <property name="defaultValue">
+        <string>1</string>
        </property>
        <property name="qgisRelation" stdset="0">
         <string notr="true"/>
@@ -355,6 +386,15 @@
        </property>
        <property name="text">
         <string/>
+       </property>
+       <property name="placeholderText">
+        <string>5</string>
+       </property>
+       <property name="nullValue">
+        <string/>
+       </property>
+       <property name="defaultValue">
+        <string>5</string>
        </property>
        <property name="qgisRelation" stdset="0">
         <string notr="true"/>
@@ -397,6 +437,15 @@
        </property>
        <property name="text">
         <string/>
+       </property>
+       <property name="placeholderText">
+        <string>0.2</string>
+       </property>
+       <property name="nullValue">
+        <string/>
+       </property>
+       <property name="defaultValue">
+        <string>0.25</string>
        </property>
        <property name="qgisRelation" stdset="0">
         <string notr="true"/>
@@ -504,6 +553,15 @@
        <property name="text">
         <string/>
        </property>
+       <property name="placeholderText">
+        <string>16</string>
+       </property>
+       <property name="nullValue">
+        <string/>
+       </property>
+       <property name="defaultValue">
+        <string>16</string>
+       </property>
        <property name="qgisRelation" stdset="0">
         <string notr="true"/>
        </property>
@@ -546,6 +604,15 @@
        <property name="text">
         <string/>
        </property>
+       <property name="placeholderText">
+        <string>1</string>
+       </property>
+       <property name="nullValue">
+        <string/>
+       </property>
+       <property name="defaultValue">
+        <string>1</string>
+       </property>
        <property name="qgisRelation" stdset="0">
         <string notr="true"/>
        </property>
@@ -561,6 +628,15 @@
        </property>
        <property name="text">
         <string/>
+       </property>
+       <property name="placeholderText">
+        <string>3</string>
+       </property>
+       <property name="nullValue">
+        <string/>
+       </property>
+       <property name="defaultValue">
+        <string>3</string>
        </property>
        <property name="qgisRelation" stdset="0">
         <string notr="true"/>
@@ -603,6 +679,15 @@
        </property>
        <property name="text">
         <string/>
+       </property>
+       <property name="placeholderText">
+        <string>1</string>
+       </property>
+       <property name="nullValue">
+        <string/>
+       </property>
+       <property name="defaultValue">
+        <string>1</string>
        </property>
        <property name="qgisRelation" stdset="0">
         <string notr="true"/>
@@ -689,8 +774,56 @@
          <height>27</height>
         </rect>
        </property>
+       <property name="placeholderText">
+        <string>0.001</string>
+       </property>
+       <property name="nullValue">
+        <string/>
+       </property>
+       <property name="defaultValue">
+        <string>0.001</string>
+       </property>
        <property name="qgisRelation" stdset="0">
         <string notr="true"/>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_36">
+       <property name="geometry">
+        <rect>
+         <x>120</x>
+         <y>470</y>
+         <width>111</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Output Address</string>
+       </property>
+      </widget>
+      <widget class="QgsFileWidget" name="Build_out">
+       <property name="geometry">
+        <rect>
+         <x>220</x>
+         <y>480</y>
+         <width>261</width>
+         <height>27</height>
+        </rect>
+       </property>
+       <property name="storageMode">
+        <enum>QgsFileWidget::GetDirectory</enum>
+       </property>
+      </widget>
+      <widget class="Line" name="line_3">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>450</y>
+         <width>561</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </widget>
@@ -708,7 +841,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Learning Rate</string>
+        <string>Batch Size</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_7">
@@ -737,7 +870,7 @@
         <string>Methods</string>
        </property>
       </widget>
-      <widget class="QComboBox" name="Ratio_comboBox">
+      <widget class="QComboBox" name="Train_valRatio">
        <property name="geometry">
         <rect>
          <x>230</x>
@@ -805,7 +938,7 @@
         <string>Maximum Iteration</string>
        </property>
       </widget>
-      <widget class="QgsFilterLineEdit" name="LearningRate_Filed">
+      <widget class="QgsFilterLineEdit" name="Train_bsize">
        <property name="enabled">
         <bool>false</bool>
        </property>
@@ -816,6 +949,12 @@
          <width>63</width>
          <height>27</height>
         </rect>
+       </property>
+       <property name="placeholderText">
+        <string>16</string>
+       </property>
+       <property name="defaultValue">
+        <string>16</string>
        </property>
        <property name="qgisRelation" stdset="0">
         <string notr="true"/>
@@ -833,69 +972,6 @@
        <property name="text">
         <string>Train Validation Ratio</string>
        </property>
-      </widget>
-      <widget class="QComboBox" name="Iteration_comboBox">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>230</x>
-         <y>230</y>
-         <width>51</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <item>
-        <property name="text">
-         <string>5</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>10</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>15</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>20</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>25</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>30</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>35</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>40</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>45</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>50</string>
-        </property>
-       </item>
       </widget>
       <widget class="QComboBox" name="Method_comboBox">
        <property name="geometry">
@@ -925,7 +1001,7 @@
       <widget class="QPushButton" name="Train_Button">
        <property name="geometry">
         <rect>
-         <x>300</x>
+         <x>260</x>
          <y>470</y>
          <width>93</width>
          <height>28</height>
@@ -1023,19 +1099,6 @@
         <number>0</number>
        </property>
       </widget>
-      <widget class="QPushButton" name="Train_Button_2">
-       <property name="geometry">
-        <rect>
-         <x>170</x>
-         <y>470</y>
-         <width>93</width>
-         <height>28</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Test</string>
-       </property>
-      </widget>
       <widget class="QgsFileWidget" name="Train_model">
        <property name="geometry">
         <rect>
@@ -1046,7 +1109,7 @@
         </rect>
        </property>
        <property name="storageMode">
-        <enum>QgsFileWidget::GetDirectory</enum>
+        <enum>QgsFileWidget::GetFile</enum>
        </property>
       </widget>
       <widget class="QLabel" name="label_43">
@@ -1060,6 +1123,28 @@
        </property>
        <property name="text">
         <string>Model Address</string>
+       </property>
+      </widget>
+      <widget class="QgsFilterLineEdit" name="Train_epoch">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>230</x>
+         <y>220</y>
+         <width>63</width>
+         <height>27</height>
+        </rect>
+       </property>
+       <property name="placeholderText">
+        <string>30</string>
+       </property>
+       <property name="defaultValue">
+        <string>30</string>
+       </property>
+       <property name="qgisRelation" stdset="0">
+        <string notr="true"/>
        </property>
       </widget>
      </widget>

@@ -1093,7 +1093,11 @@ class RandomForestClassifier:
 
             from skimage.transform import resize       
 
-        # Model Parameters[From Input Fields]--------------------------------------------------
+        # Output Location
+
+        OUT_ADD = self.dlg.Build_out.filePath()
+
+        # Model Parameters[From Input Fields]--------------------------------------------
 
         # Number of bands in input image
         # N_CHANNELS = 3
@@ -1135,6 +1139,8 @@ class RandomForestClassifier:
         for i in dor_list:
             M_DROPOUT_RATE.append(float(i))
 
+        print(M_DROPOUT_RATE)
+
         # Convolutional filter depths at each model depth
         # Either specify only 1 value common across whole model
         # OR
@@ -1147,6 +1153,7 @@ class RandomForestClassifier:
 
         for i in chan_list:
             M_CHANNELS.append(int(i))
+        print(M_CHANNELS)
 
         # Kernel/Filter dimensions
         # Either specify only 1 value common across whole model
@@ -1160,6 +1167,7 @@ class RandomForestClassifier:
 
         for i in ker_list:
             M_KERNEL_SIZE.append(int(i))
+        print(M_KERNEL_SIZE)
 
         # Number of convolutional layers per CONVBLOCK
         # Either specify only 1 value common across whole model
@@ -1173,6 +1181,7 @@ class RandomForestClassifier:
 
         for i in conv_list:
             M_CONV_PER_CONVBLOCK.append(int(i))
+        print(M_CONV_PER_CONVBLOCK)
 
         # Number of convolutional layers in ResBlock within CONVBLOCK
         # M_RES_PER_CONVBLOCK = [1]
@@ -1183,6 +1192,7 @@ class RandomForestClassifier:
 
         for i in res_list:
             M_RES_PER_CONVBLOCK.append(int(i))
+        print(M_RES_PER_CONVBLOCK)
 
         # Optimizer type
         # options :
@@ -1215,6 +1225,7 @@ class RandomForestClassifier:
         # M_ACTIVATION = 'relu'
 
         M_ACTIVATION = self.dlg.Build_ActFunc.currentText()
+
 
         # Conditional Statements----------------------------------------------------
 
@@ -1425,20 +1436,135 @@ class RandomForestClassifier:
         # Save Model--------------------------------------------------------------------
         model_architecture = model.to_json()
 
-        json_path = 'Dynamic_UNET.json'
+        json_name = 'Dynamic_UNET_test.json'
 
-        with open(json_path, 'w') as json_file:
+        out_path = os.path.join(OUT_ADD, json_name)
+
+        with open(out_path, 'w') as json_file:
             json_file.write(model_architecture)
+
+        QMessageBox.information(self.dlg, 'Process Completed', 'The model is successfully saved.')
 
     def UNET_train(self):
 
-        #ADD IMPORT STATEMENTS---------------------------------------------
+        #INPUT AND PARAMETERS---------------------------------------------
 
         IMG_ADD = self.dlg.Train_img_add.filePath()
-        IMG_VLABEL_ADD = self.dlg.Train_img_label.filePath()
+        MASK_ADD = self.dlg.Train_img_label.filePath()
         MODEL_ADD = self.dlg.Train_model.filePath()
 
+
+        if (not IMG_ADD):
+            QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of Image to be classified.')
+            return
+
+        if (not MODEL_ADD):
+            QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of saved model.')
+            return
+        
+        if (not MASK_ADD):
+            QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of the image mask/label.')
+            return
+
+
+        #Resize parameters
+        IMG_WIDTH = 512
+        IMG_HEIGHT = 512
+        IMG_SIZE = (512,512,3)
+
+        BATCH_SIZE = self.dlg.Train_bsize.value()
+        NUM_EPOCHS = self.dlg.Train_epoch.value()
         VAL_SPLIT = 0.2
+
+        if (not BATCH_SIZE):
+            BATCH_SIZE = int(self.dlg.Train_bsize.defaultValue())   #default = 16
+        else:
+            BATCH_SIZE = int(BATCH_SIZE)
+
+        if (not NUM_EPOCHS):
+            NUM_EPOCHS = int(self.dlg.Train_epoch.defaultValue())   #default = 30
+        else:
+            NUM_EPOCHS = int(NUM_EPOCHS)
+
+
+        #IMPORT STATEMENTS---------------------------------------------
+
+        try:
+            import tensorflow as tf
+            import tensorflow.keras.backend as K
+            from tensorflow.keras.layers import (Dropout,
+                                                 Conv2D,
+                                                 MaxPooling2D,
+                                                 Conv2DTranspose,
+                                                 concatenate,
+                                                 BatchNormalization,
+                                                 Activation,
+                                                 Conv2DTranspose,
+                                                 Add)
+            from tensorflow.keras import Input
+            from tensorflow.keras.callbacks import (EarlyStopping,
+                                                    ModelCheckpoint,
+                                                    ReduceLROnPlateau)
+            from tensorflow.keras.preprocessing.image import (ImageDataGenerator,
+                                                              array_to_img,
+                                                              img_to_array,
+                                                              load_img)
+
+        except ImportError:
+            print("tensorflow not present\nInstalling...")
+            # import pip
+            # pip.main(["install", "--user", "tensorflow"])
+
+            subprocess.call("pip install --user tensorflow", creationflags=subprocess.CREATE_NEW_CONSOLE)
+
+            import tensorflow as tf
+            import tensorflow.keras.backend as K
+            from tensorflow.keras.layers import (Dropout,
+                                                 Conv2D,
+                                                 MaxPooling2D,
+                                                 Conv2DTranspose,
+                                                 concatenate,
+                                                 BatchNormalization,
+                                                 Activation,
+                                                 Conv2DTranspose,
+                                                 Add)
+            from tensorflow.keras import Input
+            from tensorflow.keras.callbacks import (EarlyStopping,
+                                                    ModelCheckpoint,
+                                                    ReduceLROnPlateau)
+            from tensorflow.keras.preprocessing.image import (ImageDataGenerator,
+                                                              array_to_img,
+                                                              img_to_array,
+                                                              load_img)
+
+        try:
+            from skimage.transform import resize
+
+        except ImportError:
+            print("scikit-image package not present\nInstalling...")
+            # import pip
+            # pip.main(["install", "--user", "scikit-image"])
+
+            subprocess.call("pip install --user scikit-image", creationflags=subprocess.CREATE_NEW_CONSOLE)
+
+            from skimage.transform import resize  
+
+
+        try:
+            from sklearn.model_selection import train_test_split
+
+        except ImportError:
+            print("scikit-learn package not present\nInstalling...")
+            # import pip
+            # pip.main(["install", "--user", "scikit-learn"])
+
+            subprocess.call("pip install --user scikit-learn", creationflags=subprocess.CREATE_NEW_CONSOLE)
+
+            from sklearn.model_selection import train_test_split
+     
+
+
+
 
         img_ids = os.listdir(IMG_ADD)
 
@@ -1450,9 +1576,9 @@ class RandomForestClassifier:
             # Load Images
 
             img_path = os.path.join(IMG_ADD, img_id)
-            mask_path = os.path.join(IMG_VLABEL_ADD, img_id[:-1])
+            mask_path = os.path.join(MASK_ADD, img_id[:-1])
 
-            x_img = img_to_array(load_img(fpath))
+            x_img = img_to_array(load_img(img_path))
             x_img = resize(x_img, (512, 512), mode = 'constant', preserve_range = True)
             # Load masks
             mask = img_to_array(load_img(mask_path, color_mode = "grayscale"))
@@ -1478,6 +1604,14 @@ class RandomForestClassifier:
 
         save_model = tf.keras.models.model_from_json(loaded_nnet)
 
+        save_model.compile(optimizer='adam',
+                          loss='binary_crossentropy',
+                          metrics=[
+                              # jaccard_coef,
+                              # jaccard_coef_int,
+                              'accuracy']
+                          )
+
         save_model.fit(X_train, 
                         y_train,
                         validation_data = (X_val, y_val),
@@ -1489,6 +1623,8 @@ class RandomForestClassifier:
         weight_path = 'UNET_Model_Weights.h5'
 
         save_model.save_weights(weight_path)
+
+        QMessageBox.information(self.dlg, 'Process Completed', 'The model is successfully trained.')
 
  
     # -------------------------------------------WORKFLOW---------------------------------------------------------
@@ -1621,7 +1757,7 @@ class RandomForestClassifier:
 
         # for enabeling parameter input widgets
         self.dlg.Method_comboBox.activated.connect(self.parameterenabling)
-        self.dlg.Train_Button_2.clicked.connect(self.UNET_train)
+        self.dlg.Train_Button.clicked.connect(self.UNET_train)
 
         # ----------------------------Train TAB-------------------------------------------------------
 
