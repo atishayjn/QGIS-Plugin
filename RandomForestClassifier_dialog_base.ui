@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -1032,6 +1032,9 @@
          <width>271</width>
          <height>27</height>
         </rect>
+       </property>
+       <property name="storageMode">
+        <enum>QgsFileWidget::GetDirectory</enum>
        </property>
       </widget>
       <widget class="QgsFileWidget" name="Train_img_label">

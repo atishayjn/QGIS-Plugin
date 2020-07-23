@@ -276,6 +276,10 @@ class RandomForestClassifier:
     def tiles(self):
 
         in_path = self.dlg.Tiles_Input.filePath()
+        # in_path = os.path.normpath(in_path)
+        # print(type(in_path))
+        # print(in_path)
+
         out_path = self.dlg.Tiles_Output.filePath()
 
         if (not in_path):
@@ -290,7 +294,7 @@ class RandomForestClassifier:
 
         file_name = 'Tile'
 
-        img_out_path = os.path.join(out_path, "Images") 
+        img_out_path = os.path.join(out_path, "Tiles") 
 
         if not os.path.exists(img_out_path):
             os.makedirs(img_out_path)
@@ -1097,6 +1101,19 @@ class RandomForestClassifier:
 
         OUT_ADD = self.dlg.Build_out.filePath()
 
+        #ACCESORY FUNCTION:-------------------------------
+
+        f = 0
+
+        def input_check(depth, arg_list):
+            length = len(arg_list)
+            if (length == depth or length == 1):
+                return 0
+            else:
+                return 1
+
+
+
         # Model Parameters[From Input Fields]--------------------------------------------
 
         # Number of bands in input image
@@ -1141,6 +1158,8 @@ class RandomForestClassifier:
 
         print(M_DROPOUT_RATE)
 
+        f += input_check(M_DEPTH, M_DROPOUT_RATE)
+
         # Convolutional filter depths at each model depth
         # Either specify only 1 value common across whole model
         # OR
@@ -1154,6 +1173,8 @@ class RandomForestClassifier:
         for i in chan_list:
             M_CHANNELS.append(int(i))
         print(M_CHANNELS)
+
+        f += input_check(M_DEPTH, M_CHANNELS)
 
         # Kernel/Filter dimensions
         # Either specify only 1 value common across whole model
@@ -1169,6 +1190,8 @@ class RandomForestClassifier:
             M_KERNEL_SIZE.append(int(i))
         print(M_KERNEL_SIZE)
 
+        f += input_check(M_DEPTH, M_KERNEL_SIZE)
+
         # Number of convolutional layers per CONVBLOCK
         # Either specify only 1 value common across whole model
         # OR
@@ -1183,6 +1206,8 @@ class RandomForestClassifier:
             M_CONV_PER_CONVBLOCK.append(int(i))
         print(M_CONV_PER_CONVBLOCK)
 
+        f += input_check(M_DEPTH, M_CONV_PER_CONVBLOCK)
+
         # Number of convolutional layers in ResBlock within CONVBLOCK
         # M_RES_PER_CONVBLOCK = [1]
         M_RES_PER_CONVBLOCK = list()
@@ -1193,6 +1218,15 @@ class RandomForestClassifier:
         for i in res_list:
             M_RES_PER_CONVBLOCK.append(int(i))
         print(M_RES_PER_CONVBLOCK)
+
+        f += input_check(M_DEPTH, M_RES_PER_CONVBLOCK)
+
+        print(f)
+
+        if (f != 0):
+            QMessageBox.critical(self.dlg, 'Invalid Input', 'The number of inputs (for some parameter values) do not match the depth of the model.')
+            return
+
 
         # Optimizer type
         # options :
@@ -1628,20 +1662,20 @@ class RandomForestClassifier:
 
  
     # -------------------------------------------WORKFLOW---------------------------------------------------------
-    def parameterenabling(self):
+    def parameterenabling(self): #In Train NN Combo box
         i = self.dlg.Method_comboBox.currentIndex()
         print(i)
         if i == 0:
-            self.dlg.LearningRate_Filed.setEnabled(True)
-            self.dlg.Iteration_comboBox.setEnabled(True)
+            self.dlg.Train_bsize.setEnabled(True)
+            self.dlg.Train_epoch.setEnabled(True)
             # self.dlg.HiddenLayer_comboBox.setEnabled(True)
         if i == 1:
-            self.dlg.LearningRate_Filed.setEnabled(False)
-            self.dlg.Iteration_comboBox.setEnabled(False)
+            self.dlg.Train_bsize.setEnabled(True)
+            self.dlg.Train_epoch.setEnabled(True)
             # self.dlg.HiddenLayer_comboBox.setEnabled(True)
         if i == 2:
-            self.dlg.LearningRate_Filed.setEnabled(True)
-            self.dlg.Iteration_comboBox.setEnabled(True)
+            self.dlg.Train_bsize.setEnabled(True)
+            self.dlg.Train_epoch.setEnabled(True)
             # self.dlg.HiddenLayer_comboBox.setEnabled(True)
 
     def parameterenabling1(self):
