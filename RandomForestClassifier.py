@@ -285,7 +285,7 @@ class RandomForestClassifier:
         if (not in_path):
             print("Enter Input")
             QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of the image to be splitted.')
-            return        
+            return
 
         if (not out_path):
             print("Enter Input")
@@ -294,12 +294,12 @@ class RandomForestClassifier:
 
         file_name = 'Tile'
 
-        img_out_path = os.path.join(out_path, "Tiles") 
+        img_out_path = os.path.join(out_path, "Tiles")
 
         if not os.path.exists(img_out_path):
             os.makedirs(img_out_path)
 
-        #GIVE OPTION TO OVERWRITE HERE AND WARN
+        # GIVE OPTION TO OVERWRITE HERE AND WARN
 
         files_out_path = os.path.join(img_out_path, file_name)
 
@@ -331,7 +331,7 @@ class RandomForestClassifier:
         print(xsize)
         print(ysize)
 
-        inc = (tile_size_x*tile_size_y)/(xsize*ysize)*100
+        inc = (tile_size_x * tile_size_y) / (xsize * ysize) * 100
 
         for i in range(0, xsize, tile_size_x):
             for j in range(0, ysize, tile_size_y):
@@ -363,7 +363,7 @@ class RandomForestClassifier:
         if not os.path.exists(label_out_path):
             os.makedirs(label_out_path)
 
-        #GIVE OPTION TO OVERWRITE HERE AND WARN
+        # GIVE OPTION TO OVERWRITE HERE AND WARN
 
         file_out_path = os.path.join(label_out_path, file_name)
 
@@ -392,7 +392,7 @@ class RandomForestClassifier:
         xsize = band.XSize
         ysize = band.YSize
 
-        inc = (tile_size_x*tile_size_y)/(xsize*ysize)*100
+        inc = (tile_size_x * tile_size_y) / (xsize * ysize) * 100
 
         for i in range(0, xsize, tile_size_x):
             for j in range(0, ysize, tile_size_y):
@@ -405,7 +405,6 @@ class RandomForestClassifier:
         self.dlg.Tile_progressBar.setValue(100)
 
     # -------------------------------------------CLASSIFIERS---------------------------------------------------------
-
 
     def svm(self):
 
@@ -424,7 +423,6 @@ class RandomForestClassifier:
             from sklearn.model_selection import train_test_split
             from sklearn.svm import SVC
             from sklearn.metrics import confusion_matrix, classification_report
-
 
         self.dlg.Clfr_progressBar.setValue(30)
 
@@ -478,7 +476,7 @@ class RandomForestClassifier:
 
     def UNET_Classifier(self):
 
-        #Store and check inputs
+        # Store and check inputs
 
         THRESHOLD = 0.5
 
@@ -489,7 +487,7 @@ class RandomForestClassifier:
 
         tiles_merge = []
 
-        #import statements
+        # import statements
 
         try:
             import tensorflow as tf
@@ -521,7 +519,7 @@ class RandomForestClassifier:
 
         self.dlg.Clfr_progressBar.setValue(30)
 
-        #Load Tiles
+        # Load Tiles
         for tile in os.listdir(TILES_ADD):
             if tile.endswith(".tif"):
                 IMG_ADD = os.path.join(TILES_ADD, tile)
@@ -539,7 +537,6 @@ class RandomForestClassifier:
                 x_img = resize(img, (512, 512), mode='constant', preserve_range=True)
 
                 print(x_img)
-
 
                 self.dlg.Clfr_progressBar.setValue(50)
 
@@ -567,7 +564,7 @@ class RandomForestClassifier:
 
                 if not os.path.exists(temp_dir):
                     os.makedirs(temp_dir)
-                
+
                 fpath = os.path.join(temp_dir, str(tile))
 
                 cols = img.shape[1]
@@ -585,7 +582,7 @@ class RandomForestClassifier:
 
         print('Image Saved.')
 
-        #MERGE TILES
+        # MERGE TILES
 
         save_file = 'Classified_Merged_Image.tif'
 
@@ -599,7 +596,6 @@ class RandomForestClassifier:
 
         self.dlg.Clfr_progressBar.setValue(100)
 
-    
     def SatNet_Classifier(self):
 
         import matplotlib.pyplot as plt
@@ -653,7 +649,7 @@ class RandomForestClassifier:
 
                 print('Processing: ', IMG_ADD)
 
-                #To open the image:
+                # To open the image:
                 img_ds = gdal.Open(IMG_ADD, gdal.GA_ReadOnly)
 
                 img = np.zeros((img_ds.RasterYSize, img_ds.RasterXSize, img_ds.RasterCount),
@@ -664,19 +660,17 @@ class RandomForestClassifier:
 
                 x_img = img
 
-        #----------------------------TAKE NOTE HERE ON INPUT SIZE-----------------------
+                # ----------------------------TAKE NOTE HERE ON INPUT SIZE-----------------------
                 # x_img = resize(x_img, (64, 64), mode='constant', preserve_range=True)
                 # x_img.shape
 
                 self.dlg.Clfr_progressBar.setValue(50)
 
-
-
                 self.dlg.Clfr_progressBar.setValue(70)
 
-                #------------------TAKE NOTE HERE ON OUTPUT DIM-----------------
+                # ------------------TAKE NOTE HERE ON OUTPUT DIM-----------------
 
-                #pred = save_model.predict(np.expand_dims(x_img, axis=0), verbose=1)[0, :, :, 0]  # [ : : ] to squeeze the image dimension equiv to pred[0].squeeze()
+                # pred = save_model.predict(np.expand_dims(x_img, axis=0), verbose=1)[0, :, :, 0]  # [ : : ] to squeeze the image dimension equiv to pred[0].squeeze()
 
                 x_img1 = np.expand_dims(x_img, axis=0)
                 pred_bin = save_model.predict(x_img1, verbose=1)
@@ -684,12 +678,10 @@ class RandomForestClassifier:
 
                 self.dlg.Clfr_progressBar.setValue(90)
 
-
                 print(img_class)
 
                 out_img = np.zeros((img_ds.RasterYSize, img_ds.RasterXSize))
-                out_img[:, :] = 255/img_class
-
+                out_img[:, :] = 255 / img_class
 
                 geotrans = img_ds.GetGeoTransform()
                 proj = img_ds.GetProjection()
@@ -708,13 +700,11 @@ class RandomForestClassifier:
                 outband.WriteArray(out_img)
                 outband.FlushCache()
 
-
         self.dlg.Clfr_progressBar.setValue(100)
-
 
     def randomForest(self):
 
-        #Store and Check Input---------------------------------------
+        # Store and Check Input---------------------------------------
 
         IMAGE_ADD = self.dlg.input_img_box.filePath()
         MODEL_ADD = self.dlg.input_img_box_2.filePath()
@@ -727,7 +717,7 @@ class RandomForestClassifier:
         if (not MODEL_ADD):
             QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of saved model.')
             return
-        
+
         if (not OUT_ADD):
             QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the output address.')
             return
@@ -748,11 +738,9 @@ class RandomForestClassifier:
             # pip.main(["install", "--user", "scikit-learn"])
             subprocess.call("pip install --user scikit-learn", creationflags=subprocess.CREATE_NEW_CONSOLE)
 
-
             from sklearn.model_selection import train_test_split
             from sklearn.ensemble import RandomForestClassifier
             from sklearn.metrics import confusion_matrix, classification_report
-
 
         self.dlg.Clfr_progressBar.setValue(30)
 
@@ -767,7 +755,7 @@ class RandomForestClassifier:
         for b in range(img.shape[2]):
             img[:, :, b] = img_ds.GetRasterBand(b + 1).ReadAsArray()
 
-        print('Dimensions of Input Image: ',img.shape)
+        print('Dimensions of Input Image: ', img.shape)
 
         with open(MODEL_ADD, 'rb') as f:
             model = pickle.load(f)
@@ -782,8 +770,6 @@ class RandomForestClassifier:
 
         class_prediction = class_prediction.reshape(img[:, :, 0].shape)
         print(class_prediction.shape)
-
-
 
         # fname = self.dlg.input_img_box_3.filePath()
 
@@ -809,12 +795,10 @@ class RandomForestClassifier:
 
         self.dlg.Clfr_progressBar.setValue(100)
 
-
-
     # -------------------------------------------TRAIN---------------------------------------------------------
     def rfc_train(self):
 
-        #Store and Check Inputs---------------------------------------------------------------
+        # Store and Check Inputs---------------------------------------------------------------
         IMG_ADD = self.dlg.train_img_add.filePath()
         IMG_VLABEL_ADD = self.dlg.train_img_label.filePath()
         OUT_ADD = self.dlg.train_output.filePath()
@@ -831,14 +815,13 @@ class RandomForestClassifier:
             print("Enter Input")
             QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address to save model.')
             return
-        
+
         VALIDATION_SPLIT = self.dlg.train_valRatio.currentText()  # TO BE TAKEN FROM USER (Train Val Ratio)
 
         if (not VALIDATION_SPLIT):
             VALIDATION_SPLIT = 0.2
         else:
             VALIDATION_SPLIT = float(VALIDATION_SPLIT)
-
 
         num_trees = self.dlg.train_RFC_trees.value()
         if (not num_trees):
@@ -848,7 +831,7 @@ class RandomForestClassifier:
                 num_trees = abs(int(num_trees))
             except ValueError:
                 QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter a positive number for Number of Trees.')
-                return            
+                return
 
         Depth = self.dlg.train_RFC_Depth.value()
         if (not Depth):
@@ -857,11 +840,11 @@ class RandomForestClassifier:
             try:
                 Depth = abs(int(Depth))
             except ValueError:
-                QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter a positive number for Depth or leave blank for maximum depth.')
-                return   
+                QMessageBox.critical(self.dlg, 'Invalid Input',
+                                     'Enter a positive number for Depth or leave blank for maximum depth.')
+                return
 
-
-        #import libraries-----------------------------------------------------------------
+                # import libraries-----------------------------------------------------------------
         from osgeo import gdal, gdal_array
         import numpy as np
         import pickle
@@ -880,16 +863,16 @@ class RandomForestClassifier:
             from sklearn.ensemble import RandomForestClassifier
             from sklearn.metrics import confusion_matrix, classification_report
 
-        self.dlg.train_progressBar.setValue(20) # For progress bar
+        self.dlg.train_progressBar.setValue(20)  # For progress bar
 
-        #ADD AN OPTION HERE TO CHECK IF THE LABEL FILE IS ALREADY RASTER
+        # ADD AN OPTION HERE TO CHECK IF THE LABEL FILE IS ALREADY RASTER
 
         IMG_LABEL_ADD = self.vector2raster(IMG_VLABEL_ADD)
         RESAMPLED_IMG_LABEL1 = self.resampler(IMG_ADD, IMG_LABEL_ADD)
 
         self.dlg.train_progressBar.setValue(40)
 
-        #LOAD IMAGES
+        # LOAD IMAGES
         img_ds = gdal.Open(IMG_ADD, gdal.GA_ReadOnly)
 
         img = np.zeros((img_ds.RasterYSize, img_ds.RasterXSize, img_ds.RasterCount),
@@ -910,7 +893,7 @@ class RandomForestClassifier:
 
         np.vstack(np.unique(roi, return_counts=True)).T
 
-        #Extracting Annotated region for training
+        # Extracting Annotated region for training
         features = img[roi > 0, :]
         labels = roi[roi > 0]
         print(features.shape)
@@ -938,7 +921,8 @@ class RandomForestClassifier:
         try:
             pickle.dump(rf, open(file_path, 'wb'))
         except PermissionError:
-            QMessageBox.critical(self.dlg, 'Permission Denied', 'Unable to save the file in the specified location. Please choose a different address to save the file.')
+            QMessageBox.critical(self.dlg, 'Permission Denied',
+                                 'Unable to save the file in the specified location. Please choose a different address to save the file.')
             return
 
         self.dlg.train_progressBar.setValue(100)
@@ -1033,8 +1017,6 @@ class RandomForestClassifier:
 
         self.dlg.train_progressBar.setValue(100)
 
-
-
     def UNET_build(self):
 
         # imports-----------------------------------------------------------
@@ -1095,13 +1077,13 @@ class RandomForestClassifier:
 
             subprocess.call("pip install --user scikit-image", creationflags=subprocess.CREATE_NEW_CONSOLE)
 
-            from skimage.transform import resize       
+            from skimage.transform import resize
 
-        # Output Location
+            # Output Location
 
         OUT_ADD = self.dlg.Build_out.filePath()
 
-        #ACCESORY FUNCTION:-------------------------------
+        # ACCESORY FUNCTION:-------------------------------
 
         f = 0
 
@@ -1111,8 +1093,6 @@ class RandomForestClassifier:
                 return 0
             else:
                 return 1
-
-
 
         # Model Parameters[From Input Fields]--------------------------------------------
 
@@ -1224,9 +1204,9 @@ class RandomForestClassifier:
         print(f)
 
         if (f != 0):
-            QMessageBox.critical(self.dlg, 'Invalid Input', 'The number of inputs (for some parameter values) do not match the depth of the model.')
+            QMessageBox.critical(self.dlg, 'Invalid Input',
+                                 'The number of inputs (for some parameter values) do not match the depth of the model.')
             return
-
 
         # Optimizer type
         # options :
@@ -1259,7 +1239,6 @@ class RandomForestClassifier:
         # M_ACTIVATION = 'relu'
 
         M_ACTIVATION = self.dlg.Build_ActFunc.currentText()
-
 
         # Conditional Statements----------------------------------------------------
 
@@ -1481,12 +1460,11 @@ class RandomForestClassifier:
 
     def UNET_train(self):
 
-        #INPUT AND PARAMETERS---------------------------------------------
+        # INPUT AND PARAMETERS---------------------------------------------
 
         IMG_ADD = self.dlg.Train_img_add.filePath()
         MASK_ADD = self.dlg.Train_img_label.filePath()
         MODEL_ADD = self.dlg.Train_model.filePath()
-
 
         if (not IMG_ADD):
             QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of Image to be classified.')
@@ -1495,33 +1473,31 @@ class RandomForestClassifier:
         if (not MODEL_ADD):
             QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of saved model.')
             return
-        
+
         if (not MASK_ADD):
             QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of the image mask/label.')
             return
 
-
-        #Resize parameters
+        # Resize parameters
         IMG_WIDTH = 512
         IMG_HEIGHT = 512
-        IMG_SIZE = (512,512,3)
+        IMG_SIZE = (512, 512, 3)
 
         BATCH_SIZE = self.dlg.Train_bsize.value()
         NUM_EPOCHS = self.dlg.Train_epoch.value()
         VAL_SPLIT = 0.2
 
         if (not BATCH_SIZE):
-            BATCH_SIZE = int(self.dlg.Train_bsize.defaultValue())   #default = 16
+            BATCH_SIZE = int(self.dlg.Train_bsize.defaultValue())  # default = 16
         else:
             BATCH_SIZE = int(BATCH_SIZE)
 
         if (not NUM_EPOCHS):
-            NUM_EPOCHS = int(self.dlg.Train_epoch.defaultValue())   #default = 30
+            NUM_EPOCHS = int(self.dlg.Train_epoch.defaultValue())  # default = 30
         else:
             NUM_EPOCHS = int(NUM_EPOCHS)
 
-
-        #IMPORT STATEMENTS---------------------------------------------
+        # IMPORT STATEMENTS---------------------------------------------
 
         try:
             import tensorflow as tf
@@ -1581,8 +1557,7 @@ class RandomForestClassifier:
 
             subprocess.call("pip install --user scikit-image", creationflags=subprocess.CREATE_NEW_CONSOLE)
 
-            from skimage.transform import resize  
-
+            from skimage.transform import resize
 
         try:
             from sklearn.model_selection import train_test_split
@@ -1595,15 +1570,11 @@ class RandomForestClassifier:
             subprocess.call("pip install --user scikit-learn", creationflags=subprocess.CREATE_NEW_CONSOLE)
 
             from sklearn.model_selection import train_test_split
-     
-
-
-
 
         img_ids = os.listdir(IMG_ADD)
 
-        X = np.zeros((len(img_ids), IMG_HEIGHT,IMG_WIDTH, 3), dtype=np.float32)
-        y = np.zeros((len(img_ids), IMG_HEIGHT, IMG_WIDTH,1), dtype=np.float32)
+        X = np.zeros((len(img_ids), IMG_HEIGHT, IMG_WIDTH, 3), dtype=np.float32)
+        y = np.zeros((len(img_ids), IMG_HEIGHT, IMG_WIDTH, 1), dtype=np.float32)
 
         print("Loading Data...")
         for idx, img_id in enumerate(img_ids):
@@ -1613,14 +1584,14 @@ class RandomForestClassifier:
             mask_path = os.path.join(MASK_ADD, img_id[:-1])
 
             x_img = img_to_array(load_img(img_path))
-            x_img = resize(x_img, (512, 512), mode = 'constant', preserve_range = True)
+            x_img = resize(x_img, (512, 512), mode='constant', preserve_range=True)
             # Load masks
-            mask = img_to_array(load_img(mask_path, color_mode = "grayscale"))
-            mask = resize(mask, (512, 512, 1), mode = 'constant', preserve_range = True)
+            mask = img_to_array(load_img(mask_path, color_mode="grayscale"))
+            mask = resize(mask, (512, 512, 1), mode='constant', preserve_range=True)
             # Save images
             X[idx] = x_img
-            y[idx] = (mask/255)>0
-            if idx%10 == 0:
+            y[idx] = (mask / 255) > 0
+            if idx % 10 == 0:
                 print('#', end='')
 
         # Train-Val Split
@@ -1639,20 +1610,20 @@ class RandomForestClassifier:
         save_model = tf.keras.models.model_from_json(loaded_nnet)
 
         save_model.compile(optimizer='adam',
-                          loss='binary_crossentropy',
-                          metrics=[
-                              # jaccard_coef,
-                              # jaccard_coef_int,
-                              'accuracy']
-                          )
+                           loss='binary_crossentropy',
+                           metrics=[
+                               # jaccard_coef,
+                               # jaccard_coef_int,
+                               'accuracy']
+                           )
 
-        save_model.fit(X_train, 
-                        y_train,
-                        validation_data = (X_val, y_val),
-                        validation_freq = 5,
-                        batch_size=BATCH_SIZE,
-                        epochs=NUM_EPOCHS,
-                        )
+        save_model.fit(X_train,
+                       y_train,
+                       validation_data=(X_val, y_val),
+                       validation_freq=5,
+                       batch_size=BATCH_SIZE,
+                       epochs=NUM_EPOCHS,
+                       )
 
         weight_path = 'UNET_Model_Weights.h5'
 
@@ -1660,9 +1631,8 @@ class RandomForestClassifier:
 
         QMessageBox.information(self.dlg, 'Process Completed', 'The model is successfully trained.')
 
- 
     # -------------------------------------------WORKFLOW---------------------------------------------------------
-    def parameterenabling(self): #In Train NN Combo box
+    def parameterenabling(self):  # In Train NN Combo box
         i = self.dlg.Method_comboBox.currentIndex()
         print(i)
         if i == 0:
@@ -1696,15 +1666,15 @@ class RandomForestClassifier:
         print(i)
         if i == 0:
             self.dlg.input_img_box_6.setEnabled(True)
-            self.dlg.input_img_box.setStorageMode(1)    #To take folder as input
+            self.dlg.input_img_box.setStorageMode(1)  # To take folder as input
 
         if i == 1:
             self.dlg.input_img_box_6.setEnabled(True)
-            self.dlg.input_img_box.setStorageMode(1)    #To take folder as input
+            self.dlg.input_img_box.setStorageMode(1)  # To take folder as input
 
         if i == 2:
             self.dlg.input_img_box_6.setEnabled(False)
-            self.dlg.input_img_box.setStorageMode(0)    #To take file as input
+            self.dlg.input_img_box.setStorageMode(0)  # To take file as input
 
         return i
 
@@ -1750,6 +1720,393 @@ class RandomForestClassifier:
                                       'OUTPUT': str(output_path) + '/' + 'Merge' + '.tif'})
         print("Tiles Merged!!")
 
+        # ---------------------- help box------------------------------------------#
+
+    def help_head1(self):
+
+        self.dlg.htextBrowser_tab1.setFontUnderline(True)
+        self.dlg.htextBrowser_tab1.setFontPointSize(15)
+        self.dlg.htextBrowser_tab1.setFontWeight(75)
+        self.dlg.htextBrowser_tab1.setText('Help:')
+
+    def help_head2(self):
+
+        self.dlg.htextBrowser_tab2.setFontUnderline(True)
+        self.dlg.htextBrowser_tab2.setFontPointSize(15)
+        self.dlg.htextBrowser_tab2.setFontWeight(75)
+        self.dlg.htextBrowser_tab2.setText('Help:')
+
+    def help_head3(self):
+
+        self.dlg.htextBrowser_tab3.setFontUnderline(True)
+        self.dlg.htextBrowser_tab3.setFontPointSize(15)
+        self.dlg.htextBrowser_tab3.setFontWeight(75)
+        self.dlg.htextBrowser_tab3.setText('Help:')
+
+    def help_head4(self):
+
+        self.dlg.htextBrowser_tab4.setFontUnderline(True)
+        self.dlg.htextBrowser_tab4.setFontPointSize(15)
+        self.dlg.htextBrowser_tab4.setFontWeight(75)
+        self.dlg.htextBrowser_tab4.setText('Help:')
+
+    def help_head5(self):
+
+        self.dlg.htextBrowser_tab5.setFontUnderline(True)
+        self.dlg.htextBrowser_tab5.setFontPointSize(15)
+        self.dlg.htextBrowser_tab5.setFontWeight(75)
+        self.dlg.htextBrowser_tab5.setText('Help:')
+
+    def InpF1_help(self, event):
+
+        self.help_head1()
+        self.dlg.htextBrowser_tab1.setFontUnderline(False)
+        self.dlg.htextBrowser_tab1.setFontPointSize(10)
+        self.dlg.htextBrowser_tab1.setFontWeight(50)
+        self.dlg.htextBrowser_tab1.append(
+            'This input field is to specify the location of the image to be segregated into tiles.\nIt should be a raster image i.e in .tiff format')
+
+    def InpF2_help(self, event):
+
+        self.help_head1()
+        self.dlg.htextBrowser_tab1.setFontUnderline(False)
+        self.dlg.htextBrowser_tab1.setFontPointSize(10)
+        self.dlg.htextBrowser_tab1.setFontWeight(50)
+        self.dlg.htextBrowser_tab1.append(
+            'This input field is to specify the location of the label to be segregated into tiles.\nIt should be a vector or a raster(i.e .tiff format)')
+
+    def InpF3_help(self, event):
+
+        self.help_head1()
+        self.dlg.htextBrowser_tab1.setFontUnderline(False)
+        self.dlg.htextBrowser_tab1.setFontPointSize(10)
+        self.dlg.htextBrowser_tab1.setFontWeight(50)
+        self.dlg.htextBrowser_tab1.append(
+            'This input field is to specify the output location where the generated tiles of image and label are to be saved')
+
+    def textF1_help(self, event):
+
+        self.help_head1()
+        self.dlg.htextBrowser_tab1.setFontUnderline(False)
+        self.dlg.htextBrowser_tab1.setFontPointSize(10)
+        self.dlg.htextBrowser_tab1.setFontWeight(50)
+        self.dlg.htextBrowser_tab1.append(
+            'This is to set the number of tiles the image will be divided horizontally.\nIts default value is 500')
+
+    def textF2_help(self, event):
+
+        self.help_head1()
+        self.dlg.htextBrowser_tab1.setFontUnderline(False)
+        self.dlg.htextBrowser_tab1.setFontPointSize(10)
+        self.dlg.htextBrowser_tab1.setFontWeight(50)
+        self.dlg.htextBrowser_tab1.append(
+            'This is to set the number of tiles the image will be divided vertically.\nIts default value is 700')
+
+    def InpF4_help(self, event):
+
+        self.help_head3()
+        self.dlg.htextBrowser_tab3.setFontUnderline(False)
+        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontWeight(50)
+        self.dlg.htextBrowser_tab3.append(
+            'This input field is to specify the location of the folder containing tiles of the image.\nThe tiles should be in raster format(.tiff)')
+
+    def InpF5_help(self, event):
+
+        self.help_head3()
+        self.dlg.htextBrowser_tab3.setFontUnderline(False)
+        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontWeight(50)
+        self.dlg.htextBrowser_tab3.append(
+            'This input field is to specify the location of the folder containing tiles of the mask (label) image.\nThe tiles should be in raster format(.tiff)')
+
+    def InpF6_help(self, event):
+
+        self.help_head3()
+        self.dlg.htextBrowser_tab3.setFontUnderline(False)
+        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontWeight(50)
+        self.dlg.htextBrowser_tab3.append(
+            'This input field is to specify the location of the saved model.\nThe model should be in H5 file format.')
+
+    def InpF7_help(self, event):
+
+        self.help_head3()
+        self.dlg.htextBrowser_tab3.setFontUnderline(False)
+        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontWeight(50)
+        self.dlg.htextBrowser_tab3.append(
+            'This input field is to specify the output location where the trained data file is to be saved.\nThe file will be saved as a JSON file.')
+
+    def textF12_help(self, event):
+
+        self.help_head3()
+        self.dlg.htextBrowser_tab3.setFontUnderline(False)
+        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontWeight(50)
+        self.dlg.htextBrowser_tab3.append(
+            'To set the Batch Size. It defines the number of training samples that will be propagated through the network (less than or equal to the total number of training samples)\nIts default value is 16')
+
+    def textF13_help(self, event):
+
+        self.help_head3()
+        self.dlg.htextBrowser_tab3.setFontUnderline(False)
+        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontWeight(50)
+        self.dlg.htextBrowser_tab3.append(
+            'To set the Maximum Number of Iteration. It defines the number of times the batch data passes through the algorithm.\nIts default value is 30')
+
+    def InpF8_help(self, event):
+
+        self.help_head4()
+        self.dlg.htextBrowser_tab4.setFontUnderline(False)
+        self.dlg.htextBrowser_tab4.setFontPointSize(10)
+        self.dlg.htextBrowser_tab4.setFontWeight(50)
+        self.dlg.htextBrowser_tab4.append(
+            'This input field is to specify the location of the image for training of the data.\nIt should be a raster image(i.e in .tiff format)')
+
+    def InpF9_help(self, event):
+
+        self.help_head4()
+        self.dlg.htextBrowser_tab4.setFontUnderline(False)
+        self.dlg.htextBrowser_tab4.setFontPointSize(10)
+        self.dlg.htextBrowser_tab4.setFontWeight(50)
+        self.dlg.htextBrowser_tab4.append(
+            'This input field is to specify the location of the label file.\nIt should be a vector.')
+
+    def InpF10_help(self, event):
+
+        self.help_head4()
+        self.dlg.htextBrowser_tab4.setFontUnderline(False)
+        self.dlg.htextBrowser_tab4.setFontPointSize(10)
+        self.dlg.htextBrowser_tab4.setFontWeight(50)
+        self.dlg.htextBrowser_tab4.append(
+            'This input field is to specify the output location where the trained data file is to be saved.\nThe file will be saved as a pickle file.')
+
+    def textF14_help(self, event):
+
+        self.help_head4()
+        self.dlg.htextBrowser_tab4.setFontUnderline(False)
+        self.dlg.htextBrowser_tab4.setFontPointSize(10)
+        self.dlg.htextBrowser_tab4.setFontWeight(50)
+        self.dlg.htextBrowser_tab4.append(
+            'To set the number of trees. This parameters decides the total number of trees in your random forest classifier.\nIts default value is set to 20.')
+
+    def textF15_help(self, event):
+
+        self.help_head4()
+        self.dlg.htextBrowser_tab4.setFontUnderline(False)
+        self.dlg.htextBrowser_tab4.setFontPointSize(10)
+        self.dlg.htextBrowser_tab4.setFontWeight(50)
+        self.dlg.htextBrowser_tab4.append(
+            'To set the Depth.This parameters decides how deep the trees in the random forest will be. Deeper trees often lead to overfitting and also increase the training time.\nBy default it is set to None (Maximum Depth)')
+
+    def InpF11_help(self, event):
+
+        self.help_head5()
+        self.dlg.htextBrowser_tab5.setFontUnderline(False)
+        self.dlg.htextBrowser_tab5.setFontPointSize(10)
+        self.dlg.htextBrowser_tab5.setFontWeight(50)
+        self.dlg.htextBrowser_tab5.append(
+            'This input field is to specify the location of image in case of Non-Neural network based classifier and location of folder containing tiles of image in case of Neural network based classifier.\nThe image or tiles should be in raster format(i.e .tiff)')
+
+    def InpF12_help(self, event):
+
+        self.help_head5()
+        self.dlg.htextBrowser_tab5.setFontUnderline(False)
+        self.dlg.htextBrowser_tab5.setFontPointSize(10)
+        self.dlg.htextBrowser_tab5.setFontWeight(50)
+        self.dlg.htextBrowser_tab5.append(
+            'This input field is to specify the location of trained model file.\nThe model file should be a JSON file in case of Neural Network based classification & a Pickle file in case of Non-Neural Network based classification')
+
+    def InpF13_help(self, event):
+
+        self.help_head5()
+        self.dlg.htextBrowser_tab5.setFontUnderline(False)
+        self.dlg.htextBrowser_tab5.setFontPointSize(10)
+        self.dlg.htextBrowser_tab5.setFontWeight(50)
+        self.dlg.htextBrowser_tab5.append(
+            'This input is required only for Neural Network based classification.\nThis input field is to specify the location of model weights.\nThe model weights should be in H5 file format')
+
+    def InpF14_help(self, event):
+
+        self.help_head5()
+        self.dlg.htextBrowser_tab5.setFontUnderline(False)
+        self.dlg.htextBrowser_tab5.setFontPointSize(10)
+        self.dlg.htextBrowser_tab5.setFontWeight(50)
+        self.dlg.htextBrowser_tab5.append(
+            'This input field is to specify the output location where the classified image is to be saved.\nThe image will be saved as a raster image(i.e .tiff format)')
+
+    def InpF15_help(self, event):
+
+        self.help_head2()
+        self.dlg.htextBrowser_tab2.setFontUnderline(False)
+        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontWeight(50)
+        self.dlg.htextBrowser_tab2.append(
+            'This input field is to specify the output location where the built model is to be saved.\nThe model will be saved in H5 file format.')
+
+    def textF3_help(self, event):
+
+        self.help_head2()
+        self.dlg.htextBrowser_tab2.setFontUnderline(False)
+        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontWeight(50)
+        self.dlg.htextBrowser_tab2.append(
+            'To set the number of bands. Set this parameter equal to the number of bands in your input image.\nIts default value is 3')
+
+    def textF4_help(self, event):
+
+        self.help_head2()
+        self.dlg.htextBrowser_tab2.setFontUnderline(False)
+        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontWeight(50)
+        self.dlg.htextBrowser_tab2.append(
+            'To set the number classes (e.g. Forest, water bodies, build up land etc) you wish to classify.\nIts default value is 1')
+
+    def textF5_help(self, event):
+
+        self.help_head2()
+        self.dlg.htextBrowser_tab2.setFontUnderline(False)
+        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontWeight(50)
+        self.dlg.htextBrowser_tab2.append(
+            'To set the Depth. This parameter will determine the number depth of your convolution layers i.e. the number of kernels you want in the convolution layers.\nIts default value is 5')
+
+    def textF6_help(self, event):
+
+        self.help_head2()
+        self.dlg.htextBrowser_tab2.setFontUnderline(False)
+        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontWeight(50)
+        self.dlg.htextBrowser_tab2.append(
+            'To set the Kernel size. If you wish to build a CNN based model, then the kernel will act as a filter that is used to extract the features from the image.The kernel is a matrix that moves over the input data, performs the dot product with the sub-region of input data, and gets the output as the matrix of dot products.\nIts default value is 3')
+
+    def textF7_help(self, event):
+
+        self.help_head2()
+        self.dlg.htextBrowser_tab2.setFontUnderline(False)
+        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontWeight(50)
+        self.dlg.htextBrowser_tab2.append(
+            'To set the Dropout Rate. It is a way of performing regularization. Regularization prevents overfitting and makes the model more robust.\nThe range for this parameter is  (0,1).\nIts default value is 0.2')
+
+    def textF8_help(self, event):
+
+        self.help_head2()
+        self.dlg.htextBrowser_tab2.setFontUnderline(False)
+        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontWeight(50)
+        self.dlg.htextBrowser_tab2.append(
+            'To set the number of channels (bands). Set this equal to the number of channels (bands) in the input image.\nIts default value is 16')
+
+    def textF9_help(self, event):
+
+        self.help_head2()
+        self.dlg.htextBrowser_tab2.setFontUnderline(False)
+        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontWeight(50)
+        self.dlg.htextBrowser_tab2.append(
+            'For unet classifier, specify the number of convolutional layers you want your input to pass through before entering the Transpose layer.\nIts default value is 1.\nRefer to model architecture of UNET for more information.')
+
+    def textF10_help(self, event):
+
+        self.help_head2()
+        self.dlg.htextBrowser_tab2.setFontUnderline(False)
+        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontWeight(50)
+        self.dlg.htextBrowser_tab2.append(
+            'To set the Learning Rate.This determines how quickly the model adapts to the data.\nIt should be a positive number lying between 0.0 and 1.0.\nIts default value is 0.001')
+
+    def textF11_help(self, event):
+
+        self.help_head2()
+        self.dlg.htextBrowser_tab2.setFontUnderline(False)
+        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontWeight(50)
+        self.dlg.htextBrowser_tab2.append('This is to input vector\nIts default value is 1')
+
+    def checkbox1_help(self, event):
+
+        self.help_head2()
+        self.dlg.htextBrowser_tab2.setFontUnderline(False)
+        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontWeight(50)
+        self.dlg.htextBrowser_tab2.append(
+            'To enable Batch Normalization. It is another technique for performing regularization.\nBy default it will be enabled')
+
+    def list1_help(self, event):
+
+        self.help_head2()
+        self.dlg.htextBrowser_tab2.setFontUnderline(False)
+        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontWeight(50)
+        self.dlg.htextBrowser_tab2.append(
+            'To select the optimizer from the given list.These are algorithms or methods that are used to change the attributes of the neural network such as weights and learning rate in order to reduce the losses.\nChoose any one depending upon the problem and dataset.')
+
+    def list2_help(self, event):
+
+        self.help_head2()
+        self.dlg.htextBrowser_tab2.setFontUnderline(False)
+        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontWeight(50)
+        self.dlg.htextBrowser_tab2.append(
+            'To set the activation function. In artificial neural networks, the activation function of a node defines the output of that node given an input or set of inputs.\nUse Relu for intermediate layers\nUse sigmoid(binary classification) and softmax(multi class classification) for the output (last) layer.')
+
+    def list3_help(self, event):
+
+        self.help_head3()
+        self.dlg.htextBrowser_tab3.setFontUnderline(False)
+        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontWeight(50)
+        self.dlg.htextBrowser_tab3.append(
+            'To select the classification method for which training of data is to be done')
+
+    def list4_help(self, event):
+
+        self.help_head3()
+        self.dlg.htextBrowser_tab3.setFontUnderline(False)
+        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontWeight(50)
+        self.dlg.htextBrowser_tab3.append(
+            'To set the train validation ratio.\nIt is the ratio for spliting your data into training and validation')
+
+    def list5_help(self, event):
+
+        self.help_head4()
+        self.dlg.htextBrowser_tab4.setFontUnderline(False)
+        self.dlg.htextBrowser_tab4.setFontPointSize(10)
+        self.dlg.htextBrowser_tab4.setFontWeight(50)
+        self.dlg.htextBrowser_tab4.append(
+            'To select the classification method for which training of data is to be done')
+
+    def list6_help(self, event):
+
+        self.help_head4()
+        self.dlg.htextBrowser_tab4.setFontUnderline(False)
+        self.dlg.htextBrowser_tab4.setFontPointSize(10)
+        self.dlg.htextBrowser_tab4.setFontWeight(50)
+        self.dlg.htextBrowser_tab4.append(
+            'To set the train validation ratio.\nIt is the ratio for spliting your data into training and validation')
+
+    def list7_help(self, event):
+
+        self.help_head5()
+        self.dlg.htextBrowser_tab5.setFontUnderline(False)
+        self.dlg.htextBrowser_tab5.setFontPointSize(10)
+        self.dlg.htextBrowser_tab5.setFontWeight(50)
+        self.dlg.htextBrowser_tab5.append('To select the classification model for the classification of image')
+
+    def clearbrowser(self, event):
+
+        self.dlg.htextBrowser_tab1.clear()
+        self.dlg.htextBrowser_tab2.clear()
+        self.dlg.htextBrowser_tab3.clear()
+        self.dlg.htextBrowser_tab4.clear()
+        self.dlg.htextBrowser_tab5.clear()
+
+
+
     # --------------------------------------------DIALOG BOX------------------------------------------------------
 
     def run(self):
@@ -1775,6 +2132,61 @@ class RandomForestClassifier:
         # show the dialog
         self.dlg.show()
 
+        # ----------------------Initiating text in Text Brower----------------------------------------
+        # tab1
+        self.dlg.mtextBrowser_tab1.setFontUnderline(True)
+        self.dlg.mtextBrowser_tab1.setFontPointSize(19)
+        self.dlg.mtextBrowser_tab1.setFontWeight(75)
+        self.dlg.mtextBrowser_tab1.setText('Generate Tiles Tab:')
+
+        self.dlg.mtextBrowser_tab1.setFontUnderline(False)
+        self.dlg.mtextBrowser_tab1.setFontPointSize(10)
+        self.dlg.mtextBrowser_tab1.setFontWeight(50)
+        self.dlg.mtextBrowser_tab1.append('This Tab is to Generate Tiles of specified size of the image and label')
+        # tab2
+        self.dlg.mtextBrowser_tab2.setFontUnderline(True)
+        self.dlg.mtextBrowser_tab2.setFontPointSize(19)
+        self.dlg.mtextBrowser_tab2.setFontWeight(75)
+        self.dlg.mtextBrowser_tab2.setText('Build Model Tab:')
+
+        self.dlg.mtextBrowser_tab2.setFontUnderline(False)
+        self.dlg.mtextBrowser_tab2.setFontPointSize(10)
+        self.dlg.mtextBrowser_tab2.setFontWeight(50)
+        self.dlg.mtextBrowser_tab2.append('This Tab is to Build Model')
+        # tab3
+        self.dlg.mtextBrowser_tab3.setFontUnderline(True)
+        self.dlg.mtextBrowser_tab3.setFontPointSize(19)
+        self.dlg.mtextBrowser_tab3.setFontWeight(75)
+        self.dlg.mtextBrowser_tab3.setText('Train Data(NN) Tab:')
+
+        self.dlg.mtextBrowser_tab3.setFontUnderline(False)
+        self.dlg.mtextBrowser_tab3.setFontPointSize(10)
+        self.dlg.mtextBrowser_tab3.setFontWeight(50)
+        self.dlg.mtextBrowser_tab3.append(
+            'This Tab is to Train Data for neural network based classifiers by setting concerned hyperparameter')
+        # tab4
+        self.dlg.mtextBrowser_tab4.setFontUnderline(True)
+        self.dlg.mtextBrowser_tab4.setFontPointSize(19)
+        self.dlg.mtextBrowser_tab4.setFontWeight(75)
+        self.dlg.mtextBrowser_tab4.setText('Train Data(other) Tab:')
+
+        self.dlg.mtextBrowser_tab4.setFontUnderline(False)
+        self.dlg.mtextBrowser_tab4.setFontPointSize(10)
+        self.dlg.mtextBrowser_tab4.setFontWeight(50)
+        self.dlg.mtextBrowser_tab4.append(
+            'This Tab is to Train Data for non-neural network based classifiers by setting concerned hyperparameter')
+        # tab5
+        self.dlg.mtextBrowser_tab5.setFontUnderline(True)
+        self.dlg.mtextBrowser_tab5.setFontPointSize(19)
+        self.dlg.mtextBrowser_tab5.setFontWeight(75)
+        self.dlg.mtextBrowser_tab5.setText('Classifier Tab:')
+
+        self.dlg.mtextBrowser_tab5.setFontUnderline(False)
+        self.dlg.mtextBrowser_tab5.setFontPointSize(10)
+        self.dlg.mtextBrowser_tab5.setFontWeight(50)
+        self.dlg.mtextBrowser_tab5.append(
+            'This Tab is to Classify the image according to the choice of the classifier.')
+
         # --------------------Tiles Generation TAB----------------------------------------------
 
         # Stores entries from the input boxes
@@ -1783,9 +2195,64 @@ class RandomForestClassifier:
         # Calls the function to split image after the button is pressed
         self.dlg.Tiles_Button.clicked.connect(self.tiles)
 
+        self.dlg.Tiles_Input.enterEvent = self.InpF1_help
+        self.dlg.Tiles_Input.leaveEvent = self.clearbrowser
+
+        self.dlg.Tiles_Input_2.enterEvent = self.InpF2_help
+        self.dlg.Tiles_Input_2.leaveEvent = self.clearbrowser
+
+        self.dlg.TileSizeX.enterEvent = self.textF1_help
+        self.dlg.TileSizeX.leaveEvent = self.clearbrowser
+
+        self.dlg.TileSizeY.enterEvent = self.textF2_help
+        self.dlg.TileSizeY.leaveEvent = self.clearbrowser
+
+        self.dlg.Tiles_Output.enterEvent = self.InpF3_help
+        self.dlg.Tiles_Output.leaveEvent = self.clearbrowser
+
+
         # ---------------------- BUILD MODEL-------------------------------------------------
 
         self.dlg.Build_Button.clicked.connect(self.UNET_build)
+
+        self.dlg.Build_bands.enterEvent = self.textF3_help
+        self.dlg.Build_bands.leaveEvent = self.clearbrowser
+
+        self.dlg.Build_classes.enterEvent = self.textF4_help
+        self.dlg.Build_classes.leaveEvent = self.clearbrowser
+
+        self.dlg.Build_depth.enterEvent = self.textF5_help
+        self.dlg.Build_depth.leaveEvent = self.clearbrowser
+
+        self.dlg.Build_dout_4.enterEvent = self.textF6_help
+        self.dlg.Build_dout_4.leaveEvent = self.clearbrowser
+
+        self.dlg.Build_dout.enterEvent = self.textF7_help
+        self.dlg.Build_dout.leaveEvent = self.clearbrowser
+
+        self.dlg.Build_dout_2.enterEvent = self.textF8_help
+        self.dlg.Build_dout_2.leaveEvent = self.clearbrowser
+
+        self.dlg.Build_dout_5.enterEvent = self.textF9_help
+        self.dlg.Build_dout_5.leaveEvent = self.clearbrowser
+
+        self.dlg.Model_Learning_rate.enterEvent = self.textF10_help
+        self.dlg.Model_Learning_rate.leaveEvent = self.clearbrowser
+
+        self.dlg.Build_dout_3.enterEvent = self.textF11_help
+        self.dlg.Build_dout_3.leaveEvent = self.clearbrowser
+
+        self.dlg.Build_out.enterEvent = self.InpF15_help
+        self.dlg.Build_out.leaveEvent = self.clearbrowser
+
+        self.dlg.checkBox_4.enterEvent = self.checkbox1_help
+        self.dlg.checkBox_4.leaveEvent = self.clearbrowser
+
+        self.dlg.Build_optmzr.enterEvent = self.list1_help
+        self.dlg.Build_optmzr.leaveEvent = self.clearbrowser
+
+        self.dlg.Build_ActFunc.enterEvent = self.list2_help
+        self.dlg.Build_ActFunc.leaveEvent = self.clearbrowser
 
         # ---------------------- Train TAB (NN based)-------------------------------------------------
 
@@ -1793,10 +2260,55 @@ class RandomForestClassifier:
         self.dlg.Method_comboBox.activated.connect(self.parameterenabling)
         self.dlg.Train_Button.clicked.connect(self.UNET_train)
 
+        self.dlg.Train_img_add.enterEvent = self.InpF4_help
+        self.dlg.Train_img_add.leaveEvent = self.clearbrowser
+
+        self.dlg.Train_img_label.enterEvent = self.InpF5_help
+        self.dlg.Train_img_label.leaveEvent = self.clearbrowser
+
+        self.dlg.Train_model.enterEvent = self.InpF6_help
+        self.dlg.Train_model.leaveEvent = self.clearbrowser
+
+        self.dlg.Output_Field_2.enterEvent = self.InpF7_help
+        self.dlg.Output_Field_2.leaveEvent = self.clearbrowser
+
+        self.dlg.Train_bsize.enterEvent = self.textF12_help
+        self.dlg.Train_bsize.leaveEvent = self.clearbrowser
+
+        self.dlg.Train_epoch.enterEvent = self.textF13_help
+        self.dlg.Train_epoch.leaveEvent = self.clearbrowser
+
+        self.dlg.Method_comboBox.enterEvent = self.list3_help
+        self.dlg.Method_comboBox.leaveEvent = self.clearbrowser
+
+        self.dlg.Train_valRatio.enterEvent = self.list4_help
+        self.dlg.Train_valRatio.leaveEvent = self.clearbrowser
+
         # ----------------------------Train TAB-------------------------------------------------------
 
         self.dlg.Method_comboBox_3.activated.connect(self.parameterenabling1)
         self.dlg.train_button.clicked.connect(self.Run_Train)
+
+        self.dlg.train_img_add.enterEvent = self.InpF8_help
+        self.dlg.train_img_add.leaveEvent = self.clearbrowser
+
+        self.dlg.train_img_label.enterEvent = self.InpF9_help
+        self.dlg.train_img_label.leaveEvent = self.clearbrowser
+
+        self.dlg.train_output.enterEvent = self.InpF10_help
+        self.dlg.train_output.leaveEvent = self.clearbrowser
+
+        self.dlg.train_RFC_trees.enterEvent = self.textF14_help
+        self.dlg.train_RFC_trees.leaveEvent = self.clearbrowser
+
+        self.dlg.train_RFC_Depth.enterEvent = self.textF15_help
+        self.dlg.train_RFC_Depth.leaveEvent = self.clearbrowser
+
+        self.dlg.Method_comboBox_3.enterEvent = self.list5_help
+        self.dlg.Method_comboBox_3.leaveEvent = self.clearbrowser
+
+        self.dlg.train_valRatio.enterEvent = self.list6_help
+        self.dlg.train_valRatio.leaveEvent = self.clearbrowser
 
         # ----------------------------CLASSIFIER TAB----------------------------------------
 
@@ -1805,6 +2317,21 @@ class RandomForestClassifier:
 
         self.dlg.Classifier_comboBox.activated.connect(self.parameterenabling2)
         self.dlg.RunClassifier_Button.clicked.connect(self.Run_Classifier)
+
+        self.dlg.input_img_box.enterEvent = self.InpF11_help
+        self.dlg.input_img_box.leaveEvent = self.clearbrowser
+
+        self.dlg.input_img_box_2.enterEvent = self.InpF12_help
+        self.dlg.input_img_box_2.leaveEvent = self.clearbrowser
+
+        self.dlg.input_img_box_6.enterEvent = self.InpF13_help
+        self.dlg.input_img_box_6.leaveEvent = self.clearbrowser
+
+        self.dlg.classifier_output.enterEvent = self.InpF14_help
+        self.dlg.classifier_output.leaveEvent = self.clearbrowser
+
+        self.dlg.Classifier_comboBox.enterEvent = self.list7_help
+        self.dlg.Classifier_comboBox.leaveEvent = self.clearbrowser
 
         # self.dlg.RunClassifier_Button.clicked.connect(self.merge)
 
