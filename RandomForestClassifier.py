@@ -918,7 +918,8 @@ class RandomForestClassifier:
         class_predict = rf.predict(y_Test)
         confusion_mat = classification_report(y_Test,class_predict,output_dict=True)
         df = pd.DataFrame(confusion_mat).transpose()
-        df.to_csv(OUT_ADD)
+        csv_path = os.path.join(OUT_ADD, "classification_report.csv")
+        df.to_csv(csv_path)
 
         self.dlg.train_progressBar.setValue(80)
 
@@ -1022,7 +1023,8 @@ class RandomForestClassifier:
         class_predict = rf.predict(y_Test)
         confusion_mat = classification_report(y_Test,class_predict,output_dict=True)
         df = pd.DataFrame(confusion_mat).transpose()
-        df.to_csv(OUT_ADD)
+        csv_path = os.path.join(OUT_ADD, "classification_report.csv")
+        df.to_csv(csv_path)
 
         self.dlg.train_progressBar.setValue(80)
 
