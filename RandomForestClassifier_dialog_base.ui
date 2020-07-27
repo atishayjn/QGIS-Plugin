@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>967</width>
+    <width>882</width>
     <height>634</height>
    </rect>
   </property>
@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>4</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -40,13 +40,19 @@
        <property name="geometry">
         <rect>
          <x>40</x>
-         <y>120</y>
+         <y>119</y>
          <width>101</width>
-         <height>20</height>
+         <height>16</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
-        <string>Tile Size :</string>
+        <string>Tile Size</string>
        </property>
       </widget>
       <widget class="QgsFileWidget" name="Tiles_Input">
@@ -279,7 +285,7 @@
         <rect>
          <x>30</x>
          <y>130</y>
-         <width>541</width>
+         <width>521</width>
          <height>20</height>
         </rect>
        </property>
@@ -290,21 +296,37 @@
       <widget class="QTextBrowser" name="mtextBrowser_tab1">
        <property name="geometry">
         <rect>
-         <x>570</x>
+         <x>590</x>
          <y>0</y>
-         <width>371</width>
-         <height>191</height>
+         <width>256</width>
+         <height>192</height>
         </rect>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Generate Tiles&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;This tab is to Generate Tiles of specified size of the image and label.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
       <widget class="QTextBrowser" name="htextBrowser_tab1">
        <property name="geometry">
         <rect>
-         <x>570</x>
+         <x>590</x>
          <y>200</y>
-         <width>371</width>
+         <width>256</width>
          <height>381</height>
         </rect>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Help&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;[Hover over any input field to know more]&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </widget>
@@ -515,24 +537,36 @@
          <x>30</x>
          <y>10</y>
          <width>111</width>
-         <height>21</height>
+         <height>31</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
-        <string>Dataset:</string>
+        <string>Dataset</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_37">
        <property name="geometry">
         <rect>
          <x>30</x>
-         <y>120</y>
+         <y>130</y>
          <width>121</width>
-         <height>41</height>
+         <height>31</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
-        <string>Model Parameters:</string>
+        <string>Model Parameters</string>
        </property>
       </widget>
       <widget class="Line" name="line">
@@ -851,18 +885,28 @@
         <rect>
          <x>590</x>
          <y>0</y>
-         <width>351</width>
-         <height>221</height>
+         <width>256</width>
+         <height>192</height>
         </rect>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Build Model&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This Tab is used to build UNET Classification model. Customize the model using model parameters. &lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Output: Model (.json)&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
       <widget class="QTextBrowser" name="htextBrowser_tab2">
        <property name="geometry">
         <rect>
          <x>590</x>
-         <y>230</y>
-         <width>351</width>
-         <height>351</height>
+         <y>200</y>
+         <width>256</width>
+         <height>381</height>
         </rect>
        </property>
       </widget>
@@ -874,8 +918,8 @@
       <widget class="QLabel" name="label_9">
        <property name="geometry">
         <rect>
-         <x>100</x>
-         <y>180</y>
+         <x>90</x>
+         <y>220</y>
          <width>91</width>
          <height>16</height>
         </rect>
@@ -887,11 +931,17 @@
       <widget class="QLabel" name="label_7">
        <property name="geometry">
         <rect>
-         <x>40</x>
-         <y>140</y>
+         <x>30</x>
+         <y>180</y>
          <width>91</width>
-         <height>16</height>
+         <height>21</height>
         </rect>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
        </property>
        <property name="text">
         <string>Parameters</string>
@@ -900,22 +950,28 @@
       <widget class="QLabel" name="label_8">
        <property name="geometry">
         <rect>
-         <x>320</x>
+         <x>200</x>
          <y>140</y>
          <width>55</width>
          <height>16</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
-        <string>Methods</string>
+        <string>Model</string>
        </property>
       </widget>
       <widget class="QComboBox" name="Train_valRatio">
        <property name="geometry">
         <rect>
-         <x>230</x>
-         <y>290</y>
-         <width>73</width>
+         <x>480</x>
+         <y>260</y>
+         <width>71</width>
          <height>22</height>
         </rect>
        </property>
@@ -968,10 +1024,10 @@
       <widget class="QLabel" name="label_10">
        <property name="geometry">
         <rect>
-         <x>100</x>
-         <y>230</y>
+         <x>90</x>
+         <y>265</y>
          <width>111</width>
-         <height>16</height>
+         <height>21</height>
         </rect>
        </property>
        <property name="text">
@@ -980,12 +1036,12 @@
       </widget>
       <widget class="QgsFilterLineEdit" name="Train_bsize">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="geometry">
         <rect>
-         <x>230</x>
-         <y>180</y>
+         <x>220</x>
+         <y>220</y>
          <width>63</width>
          <height>27</height>
         </rect>
@@ -1003,10 +1059,10 @@
       <widget class="QLabel" name="label_12">
        <property name="geometry">
         <rect>
-         <x>40</x>
-         <y>290</y>
+         <x>330</x>
+         <y>260</y>
          <width>131</width>
-         <height>20</height>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
@@ -1016,7 +1072,7 @@
       <widget class="QComboBox" name="Method_comboBox">
        <property name="geometry">
         <rect>
-         <x>430</x>
+         <x>260</x>
          <y>140</y>
          <width>181</width>
          <height>22</height>
@@ -1054,14 +1110,14 @@
       <widget class="QLabel" name="label_16">
        <property name="geometry">
         <rect>
-         <x>30</x>
-         <y>350</y>
-         <width>151</width>
-         <height>16</height>
+         <x>90</x>
+         <y>339</y>
+         <width>101</width>
+         <height>31</height>
         </rect>
        </property>
        <property name="text">
-        <string>Data File Output Location</string>
+        <string>Output Address</string>
        </property>
       </widget>
       <widget class="QgsFileWidget" name="Output_Field_2">
@@ -1170,12 +1226,12 @@
       </widget>
       <widget class="QgsFilterLineEdit" name="Train_epoch">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="geometry">
         <rect>
-         <x>230</x>
-         <y>220</y>
+         <x>220</x>
+         <y>260</y>
          <width>63</width>
          <height>27</height>
         </rect>
@@ -1193,21 +1249,46 @@
       <widget class="QTextBrowser" name="mtextBrowser_tab3">
        <property name="geometry">
         <rect>
-         <x>620</x>
+         <x>590</x>
          <y>0</y>
-         <width>321</width>
-         <height>221</height>
+         <width>256</width>
+         <height>192</height>
         </rect>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Train Data (NN)&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This Tab is used to train Neural-Network based classifiers like UNET, SatelliteNet. &lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Output: &lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;(i) Model Weights (.h5)&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;(ii) Classification Report (.csv)&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
       <widget class="QTextBrowser" name="htextBrowser_tab3">
        <property name="geometry">
         <rect>
-         <x>620</x>
-         <y>230</y>
-         <width>321</width>
-         <height>351</height>
+         <x>590</x>
+         <y>200</y>
+         <width>256</width>
+         <height>381</height>
         </rect>
+       </property>
+      </widget>
+      <widget class="Line" name="line_5">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>195</y>
+         <width>541</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </widget>
@@ -1218,9 +1299,9 @@
       <widget class="QComboBox" name="train_valRatio">
        <property name="geometry">
         <rect>
-         <x>220</x>
+         <x>222</x>
          <y>330</y>
-         <width>73</width>
+         <width>71</width>
          <height>22</height>
         </rect>
        </property>
@@ -1295,14 +1376,20 @@
          <height>16</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
-        <string>Methods</string>
+        <string>Model</string>
        </property>
       </widget>
       <widget class="QgsFileWidget" name="train_img_label">
        <property name="geometry">
         <rect>
-         <x>320</x>
+         <x>290</x>
          <y>70</y>
          <width>271</width>
          <height>27</height>
@@ -1312,7 +1399,7 @@
       <widget class="QgsFileWidget" name="train_output">
        <property name="geometry">
         <rect>
-         <x>320</x>
+         <x>290</x>
          <y>110</y>
          <width>271</width>
          <height>27</height>
@@ -1364,7 +1451,7 @@
       <widget class="QComboBox" name="Method_comboBox_3">
        <property name="geometry">
         <rect>
-         <x>420</x>
+         <x>380</x>
          <y>170</y>
          <width>181</width>
          <height>22</height>
@@ -1390,6 +1477,12 @@
          <height>16</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
         <string>Parameters</string>
        </property>
@@ -1397,7 +1490,7 @@
       <widget class="QgsFileWidget" name="train_img_add">
        <property name="geometry">
         <rect>
-         <x>320</x>
+         <x>290</x>
          <y>30</y>
          <width>271</width>
          <height>27</height>
@@ -1516,20 +1609,32 @@
       <widget class="QTextBrowser" name="mtextBrowser_tab4">
        <property name="geometry">
         <rect>
-         <x>610</x>
+         <x>590</x>
          <y>0</y>
-         <width>331</width>
-         <height>221</height>
+         <width>256</width>
+         <height>192</height>
         </rect>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Train Data (Other)&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This Tab is used to build and train pixel based classifiers like Random Forest and SVM.&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Output:  &lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;(i) Trained Model (.sav)&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;(ii) Classification Report (.csv)&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
       <widget class="QTextBrowser" name="htextBrowser_tab4">
        <property name="geometry">
         <rect>
-         <x>610</x>
-         <y>230</y>
-         <width>331</width>
-         <height>351</height>
+         <x>590</x>
+         <y>200</y>
+         <width>256</width>
+         <height>381</height>
         </rect>
        </property>
       </widget>
@@ -1702,6 +1807,12 @@
          <height>21</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
        <property name="text">
         <string>Model</string>
        </property>
@@ -1722,20 +1833,30 @@
       <widget class="QTextBrowser" name="mtextBrowser_tab5">
        <property name="geometry">
         <rect>
-         <x>580</x>
+         <x>590</x>
          <y>0</y>
-         <width>361</width>
-         <height>221</height>
+         <width>256</width>
+         <height>192</height>
         </rect>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Classifier&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This Tab is used to make classifications using trained models. &lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Output:  Classified Image (.tif)&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
       <widget class="QTextBrowser" name="htextBrowser_tab5">
        <property name="geometry">
         <rect>
-         <x>580</x>
-         <y>230</y>
-         <width>361</width>
-         <height>351</height>
+         <x>590</x>
+         <y>200</y>
+         <width>256</width>
+         <height>381</height>
         </rect>
        </property>
       </widget>

@@ -32,9 +32,9 @@ from .resources import *
 from .RandomForestClassifier_dialog import RandomForestClassifierDialog
 from osgeo import gdal, gdal_array
 import numpy as np
-import os
+import pandas as pd
+import os, os.path
 import subprocess
-import os.path
 import processing, sys
 import glob
 
@@ -912,11 +912,25 @@ class RandomForestClassifier:
 
         rf.fit(X_train, y_train)
 
+        # Classification Report
+        class_predict = rf.predict(X_test)
+        class_report = classification_report(y_test, class_predict, output_dict=True)
+        df = pd.DataFrame(class_report).transpose()
+        report_file = "Classification_Report_RFC.csv"
+        report_path = os.path.join(OUT_ADD, report_file)
+        
+        try:
+            df.to_csv(report_path)
+        except PermissionError:
+            QMessageBox.critical(self.dlg, 'Permission Denied',
+                                 'Unable to save the file in the specified location. Please choose a different address to save the file.')
+            return
+
         self.dlg.train_progressBar.setValue(80)
 
-        filename = 'model_5band_plugged.sav'
-
-        file_path = os.path.join(OUT_ADD, filename)
+        # Save Model
+        model_file = 'RFC_model_trained.sav'
+        file_path = os.path.join(OUT_ADD, model_file)
 
         try:
             pickle.dump(rf, open(file_path, 'wb'))
@@ -927,7 +941,7 @@ class RandomForestClassifier:
 
         self.dlg.train_progressBar.setValue(100)
 
-    def svm_train(self):
+    def svm_train(self):  #To-do: Check input and update wrt RFC
 
         from osgeo import gdal, gdal_array
         import numpy as np
@@ -954,6 +968,8 @@ class RandomForestClassifier:
 
         IMG_LABEL_ADD = self.vector2raster(IMG_VLABEL_ADD)
         RESAMPLED_IMG_LABEL1 = self.resampler(IMG_ADD, IMG_LABEL_ADD)
+
+        OUT_ADD = self.dlg.train_output.filePath()
 
         VALIDATION_SPLIT = self.dlg.train_valRatio.currentText()  # TO BE TAKEN FROM USER (Train Val Ratio)
 
@@ -1009,11 +1025,33 @@ class RandomForestClassifier:
         svm = SVC()
 
         svm.fit(X_train, y_train)
+        
+        # Classification Report
+        class_predict = svm.predict(X_test)
+        class_report = classification_report(y_test, class_predict, output_dict=True)
+        df = pd.DataFrame(class_report).transpose()
+        report_file = "Classification_Report_SVM.csv"
+        report_path = os.path.join(OUT_ADD, report_file)
+        
+        try:
+            df.to_csv(report_path)
+        except PermissionError:
+            QMessageBox.critical(self.dlg, 'Permission Denied',
+                                 'Unable to save the file in the specified location. Please choose a different address to save the file.')
+            return
 
         self.dlg.train_progressBar.setValue(80)
 
-        filename = 'svm_model.sav'
-        pickle.dump(svm, open(filename, 'wb'))
+        # Save Model
+        model_file = 'svm_model_trained.sav'
+        file_path = os.path.join(OUT_ADD, model_file)
+
+        try:
+            pickle.dump(svm, open(file_path, 'wb'))
+        except PermissionError:
+            QMessageBox.critical(self.dlg, 'Permission Denied',
+                                 'Unable to save the file in the specified location. Please choose a different address to save the file.')
+            return
 
         self.dlg.train_progressBar.setValue(100)
 
@@ -1465,6 +1503,7 @@ class RandomForestClassifier:
         IMG_ADD = self.dlg.Train_img_add.filePath()
         MASK_ADD = self.dlg.Train_img_label.filePath()
         MODEL_ADD = self.dlg.Train_model.filePath()
+        OUT_ADD = self.dlg.Train_Out.filePath()
 
         if (not IMG_ADD):
             QMessageBox.critical(self.dlg, 'Invalid Input', 'Enter the address of Image to be classified.')
@@ -1594,8 +1633,8 @@ class RandomForestClassifier:
             if idx % 10 == 0:
                 print('#', end='')
 
-        # Train-Val Split
-        X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=VAL_SPLIT, random_state=0)
+        # Train-Test Split
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=VAL_SPLIT, random_state=0)
 
         print("\nData Loaded")
 
@@ -1625,7 +1664,22 @@ class RandomForestClassifier:
                        epochs=NUM_EPOCHS,
                        )
 
-        weight_path = 'UNET_Model_Weights.h5'
+        # Classification Report
+        class_predict = save_model.predict(X_test)
+        class_report = classification_report(y_test, class_predict, output_dict=True)
+        df = pd.DataFrame(class_report).transpose()
+        report_file = "Classification_Report_UNET.csv"
+        report_path = os.path.join(OUT_ADD, report_file)
+        
+        try:
+            df.to_csv(report_path)
+        except PermissionError:
+            QMessageBox.critical(self.dlg, 'Permission Denied',
+                                 'Unable to save the file in the specified location. Please choose a different address to save the file.')
+            return
+
+        weight_file = 'UNET_Model_Weights.h5'
+        weight_path = os.path.join(OUT_ADD, weight_file)
 
         save_model.save_weights(weight_path)
 
@@ -1738,10 +1792,10 @@ class RandomForestClassifier:
 
     def help_head3(self):
 
-        self.dlg.htextBrowser_tab3.setFontUnderline(True)
-        self.dlg.htextBrowser_tab3.setFontPointSize(15)
-        self.dlg.htextBrowser_tab3.setFontWeight(75)
-        self.dlg.htextBrowser_tab3.setText('Help:')
+        # self.dlg.htextBrowser_tab3.setFontUnderline(True)
+        self.dlg.htextBrowser_tab3.setFontPointSize(12)
+        self.dlg.htextBrowser_tab3.setFontWeight(70)
+        self.dlg.htextBrowser_tab3.setText('Help Box\n')
 
     def help_head4(self):
 
@@ -1842,10 +1896,17 @@ class RandomForestClassifier:
 
         self.help_head3()
         self.dlg.htextBrowser_tab3.setFontUnderline(False)
-        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontPointSize(9)
         self.dlg.htextBrowser_tab3.setFontWeight(50)
+        # self.dlg.htextBrowser_tab3.append(
+        #     'To set the Batch Size. It defines the number of training samples that will be propagated through the network (less than or equal to the total number of training samples)\nIts default value is 16')
         self.dlg.htextBrowser_tab3.append(
-            'To set the Batch Size. It defines the number of training samples that will be propagated through the network (less than or equal to the total number of training samples)\nIts default value is 16')
+            'Batch Size: \nNumber of training samples that will be propagated through the network (less than or equal to the total number of training samples)\n\n' +
+            'Range: 1 to Size(Training Samples)\n' +
+            'Default Value: 16\n\n' +
+            'Format: Positive number'
+            )
+
 
     def textF13_help(self, event):
 
@@ -2134,58 +2195,58 @@ class RandomForestClassifier:
 
         # ----------------------Initiating text in Text Brower----------------------------------------
         # tab1
-        self.dlg.mtextBrowser_tab1.setFontUnderline(True)
-        self.dlg.mtextBrowser_tab1.setFontPointSize(19)
-        self.dlg.mtextBrowser_tab1.setFontWeight(75)
-        self.dlg.mtextBrowser_tab1.setText('Generate Tiles Tab:')
+        # self.dlg.mtextBrowser_tab1.setFontUnderline(True)
+        # self.dlg.mtextBrowser_tab1.setFontPointSize(19)
+        # self.dlg.mtextBrowser_tab1.setFontWeight(75)
+        # self.dlg.mtextBrowser_tab1.setText('Generate Tiles Tab:')
 
-        self.dlg.mtextBrowser_tab1.setFontUnderline(False)
-        self.dlg.mtextBrowser_tab1.setFontPointSize(10)
-        self.dlg.mtextBrowser_tab1.setFontWeight(50)
-        self.dlg.mtextBrowser_tab1.append('This Tab is to Generate Tiles of specified size of the image and label')
-        # tab2
-        self.dlg.mtextBrowser_tab2.setFontUnderline(True)
-        self.dlg.mtextBrowser_tab2.setFontPointSize(19)
-        self.dlg.mtextBrowser_tab2.setFontWeight(75)
-        self.dlg.mtextBrowser_tab2.setText('Build Model Tab:')
+        # self.dlg.mtextBrowser_tab1.setFontUnderline(False)
+        # self.dlg.mtextBrowser_tab1.setFontPointSize(10)
+        # self.dlg.mtextBrowser_tab1.setFontWeight(50)
+        # self.dlg.mtextBrowser_tab1.append('This Tab is to Generate Tiles of specified size of the image and label')
+        # # tab2
+        # self.dlg.mtextBrowser_tab2.setFontUnderline(True)
+        # self.dlg.mtextBrowser_tab2.setFontPointSize(19)
+        # self.dlg.mtextBrowser_tab2.setFontWeight(75)
+        # self.dlg.mtextBrowser_tab2.setText('Build Model Tab:')
 
-        self.dlg.mtextBrowser_tab2.setFontUnderline(False)
-        self.dlg.mtextBrowser_tab2.setFontPointSize(10)
-        self.dlg.mtextBrowser_tab2.setFontWeight(50)
-        self.dlg.mtextBrowser_tab2.append('This Tab is to Build Model')
-        # tab3
-        self.dlg.mtextBrowser_tab3.setFontUnderline(True)
-        self.dlg.mtextBrowser_tab3.setFontPointSize(19)
-        self.dlg.mtextBrowser_tab3.setFontWeight(75)
-        self.dlg.mtextBrowser_tab3.setText('Train Data(NN) Tab:')
+        # self.dlg.mtextBrowser_tab2.setFontUnderline(False)
+        # self.dlg.mtextBrowser_tab2.setFontPointSize(10)
+        # self.dlg.mtextBrowser_tab2.setFontWeight(50)
+        # self.dlg.mtextBrowser_tab2.append('This Tab is to Build Model')
+        # # tab3
+        # self.dlg.mtextBrowser_tab3.setFontUnderline(True)
+        # self.dlg.mtextBrowser_tab3.setFontPointSize(19)
+        # self.dlg.mtextBrowser_tab3.setFontWeight(75)
+        # self.dlg.mtextBrowser_tab3.setText('Train Data(NN) Tab:')
 
-        self.dlg.mtextBrowser_tab3.setFontUnderline(False)
-        self.dlg.mtextBrowser_tab3.setFontPointSize(10)
-        self.dlg.mtextBrowser_tab3.setFontWeight(50)
-        self.dlg.mtextBrowser_tab3.append(
-            'This Tab is to Train Data for neural network based classifiers by setting concerned hyperparameter')
-        # tab4
-        self.dlg.mtextBrowser_tab4.setFontUnderline(True)
-        self.dlg.mtextBrowser_tab4.setFontPointSize(19)
-        self.dlg.mtextBrowser_tab4.setFontWeight(75)
-        self.dlg.mtextBrowser_tab4.setText('Train Data(other) Tab:')
+        # self.dlg.mtextBrowser_tab3.setFontUnderline(False)
+        # self.dlg.mtextBrowser_tab3.setFontPointSize(10)
+        # self.dlg.mtextBrowser_tab3.setFontWeight(50)
+        # self.dlg.mtextBrowser_tab3.append(
+        #     'This Tab is to Train Data for neural network based classifiers by setting concerned hyperparameter')
+        # # tab4
+        # self.dlg.mtextBrowser_tab4.setFontUnderline(True)
+        # self.dlg.mtextBrowser_tab4.setFontPointSize(19)
+        # self.dlg.mtextBrowser_tab4.setFontWeight(75)
+        # self.dlg.mtextBrowser_tab4.setText('Train Data(other) Tab:')
 
-        self.dlg.mtextBrowser_tab4.setFontUnderline(False)
-        self.dlg.mtextBrowser_tab4.setFontPointSize(10)
-        self.dlg.mtextBrowser_tab4.setFontWeight(50)
-        self.dlg.mtextBrowser_tab4.append(
-            'This Tab is to Train Data for non-neural network based classifiers by setting concerned hyperparameter')
-        # tab5
-        self.dlg.mtextBrowser_tab5.setFontUnderline(True)
-        self.dlg.mtextBrowser_tab5.setFontPointSize(19)
-        self.dlg.mtextBrowser_tab5.setFontWeight(75)
-        self.dlg.mtextBrowser_tab5.setText('Classifier Tab:')
+        # self.dlg.mtextBrowser_tab4.setFontUnderline(False)
+        # self.dlg.mtextBrowser_tab4.setFontPointSize(10)
+        # self.dlg.mtextBrowser_tab4.setFontWeight(50)
+        # self.dlg.mtextBrowser_tab4.append(
+        #     'This Tab is to Train Data for non-neural network based classifiers by setting concerned hyperparameter')
+        # # tab5
+        # self.dlg.mtextBrowser_tab5.setFontUnderline(True)
+        # self.dlg.mtextBrowser_tab5.setFontPointSize(19)
+        # self.dlg.mtextBrowser_tab5.setFontWeight(75)
+        # self.dlg.mtextBrowser_tab5.setText('Classifier Tab:')
 
-        self.dlg.mtextBrowser_tab5.setFontUnderline(False)
-        self.dlg.mtextBrowser_tab5.setFontPointSize(10)
-        self.dlg.mtextBrowser_tab5.setFontWeight(50)
-        self.dlg.mtextBrowser_tab5.append(
-            'This Tab is to Classify the image according to the choice of the classifier.')
+        # self.dlg.mtextBrowser_tab5.setFontUnderline(False)
+        # self.dlg.mtextBrowser_tab5.setFontPointSize(10)
+        # self.dlg.mtextBrowser_tab5.setFontWeight(50)
+        # self.dlg.mtextBrowser_tab5.append(
+        #     'This Tab is to Classify the image according to the choice of the classifier.')
 
         # --------------------Tiles Generation TAB----------------------------------------------
 
