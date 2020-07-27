@@ -409,6 +409,7 @@ class RandomForestClassifier:
     def svm(self):
 
         import pickle, subprocess
+       
 
         try:
             from sklearn.model_selection import train_test_split
@@ -727,6 +728,7 @@ class RandomForestClassifier:
         from osgeo import gdal, gdal_array
         import numpy as np
         import pickle, subprocess
+        
 
         try:
             from sklearn.model_selection import train_test_split
@@ -767,6 +769,7 @@ class RandomForestClassifier:
         self.dlg.Clfr_progressBar.setValue(60)
 
         class_prediction = model.predict(img_as_array)
+       
 
         class_prediction = class_prediction.reshape(img[:, :, 0].shape)
         print(class_prediction.shape)
@@ -848,6 +851,7 @@ class RandomForestClassifier:
         from osgeo import gdal, gdal_array
         import numpy as np
         import pickle
+        import pandas as pd
 
         try:
             from sklearn.model_selection import train_test_split
@@ -911,6 +915,10 @@ class RandomForestClassifier:
                                     oob_score=True)  # n_estim = Trees, max_depth = Depth
 
         rf.fit(X_train, y_train)
+        class_predict = rf.predict(y_Test)
+        confusion_mat = classification_report(y_Test,class_predict,output_dict=True)
+        df = pd.DataFrame(confusion_mat).transpose()
+        df.to_csv(OUT_ADD)
 
         self.dlg.train_progressBar.setValue(80)
 
@@ -932,6 +940,7 @@ class RandomForestClassifier:
         from osgeo import gdal, gdal_array
         import numpy as np
         import pickle
+        import pandas as pd
 
         try:
             from sklearn.model_selection import train_test_split
@@ -1009,6 +1018,11 @@ class RandomForestClassifier:
         svm = SVC()
 
         svm.fit(X_train, y_train)
+        
+        class_predict = rf.predict(y_Test)
+        confusion_mat = classification_report(y_Test,class_predict,output_dict=True)
+        df = pd.DataFrame(confusion_mat).transpose()
+        df.to_csv(OUT_ADD)
 
         self.dlg.train_progressBar.setValue(80)
 
