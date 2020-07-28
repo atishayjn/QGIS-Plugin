@@ -916,8 +916,8 @@ class RandomForestClassifier:
         class_predict = rf.predict(X_test)
         class_report = classification_report(y_test, class_predict, output_dict=True)
         kappa_statistic = cohen_kappa_score(class_predict,y_test)
+        class_report['Cohen Kappa Statistic'] = kappa_statistic
         df = pd.DataFrame(class_report).transpose()
-        df['Cohen Kappa Score'] = kappa_statistic
         report_file = "Classification_Report_RFC.csv"
         report_path = os.path.join(OUT_ADD, report_file)
         
@@ -961,7 +961,7 @@ class RandomForestClassifier:
 
             from sklearn.model_selection import train_test_split
             from sklearn.svm import SVC
-            from sklearn.metrics import confusion_matrix, classification_report
+            from sklearn.metrics import confusion_matrix, classification_report, cohen_kappa_score
 
         self.dlg.train_progressBar.setValue(20)
 
@@ -1032,8 +1032,8 @@ class RandomForestClassifier:
         class_predict = svm.predict(X_test)
         class_report = classification_report(y_test, class_predict, output_dict=True)
         kappa_statistic = cohen_kappa_score(class_predict,y_test)
+        class_report['Cohen Kappa Statistic'] = kappa_statistic
         df = pd.DataFrame(class_report).transpose()
-        df['Cohen Kappa Score'] = kappa_statistic
         report_file = "Classification_Report_SVM.csv"
         report_path = os.path.join(OUT_ADD, report_file)
         
