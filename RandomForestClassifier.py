@@ -852,7 +852,7 @@ class RandomForestClassifier:
         try:
             from sklearn.model_selection import train_test_split
             from sklearn.ensemble import RandomForestClassifier
-            from sklearn.metrics import confusion_matrix, classification_report
+            from sklearn.metrics import confusion_matrix, classification_report,cohen_kappa_score
         except ImportError:
             print("scikit-learn package not present\nInstalling...")
             # import pip
@@ -915,7 +915,9 @@ class RandomForestClassifier:
         # Classification Report
         class_predict = rf.predict(X_test)
         class_report = classification_report(y_test, class_predict, output_dict=True)
+        kappa_statistic = cohen_kappa_score(class_predict,y_test)
         df = pd.DataFrame(class_report).transpose()
+        df['Cohen Kappa Score'] = kappa_statistic
         report_file = "Classification_Report_RFC.csv"
         report_path = os.path.join(OUT_ADD, report_file)
         
@@ -950,7 +952,7 @@ class RandomForestClassifier:
         try:
             from sklearn.model_selection import train_test_split
             from sklearn.svm import SVC
-            from sklearn.metrics import confusion_matrix, classification_report
+            from sklearn.metrics import confusion_matrix, classification_report, cohen_kappa_score
         except ImportError:
             print("scikit-learn package not present\nInstalling...")
             # import pip
@@ -1029,7 +1031,9 @@ class RandomForestClassifier:
         # Classification Report
         class_predict = svm.predict(X_test)
         class_report = classification_report(y_test, class_predict, output_dict=True)
+        kappa_statistic = cohen_kappa_score(class_predict,y_test)
         df = pd.DataFrame(class_report).transpose()
+        df['Cohen Kappa Score'] = kappa_statistic
         report_file = "Classification_Report_SVM.csv"
         report_path = os.path.join(OUT_ADD, report_file)
         
@@ -2087,7 +2091,7 @@ class RandomForestClassifier:
         self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
-            'Depth: \nNumber of kernels in a convolution layer\n\n' +
+            'Depth: \nDepth of the Model\n\n' +
             'Default Value: 5\n\n' +
             'Format: Positive integer'
             )
@@ -2102,7 +2106,7 @@ class RandomForestClassifier:
         self.dlg.htextBrowser_tab2.append(
             'Kernel Size: \nKernel acts as a filter that is used to extract the features from the image. It is a matrix that moves over the input data, performs the dot product with the sub-region of input data, and gets the output as the matrix of dot products. \n\n' +
             'Default Value: 3 i.e. a matrix of size 3x3. is\n\n' +
-            'Format: Positive integer'
+            'Format: Either a single value (positive integer) for all the layers or a list of lenght equal to Depth parameters with values for each layer separated by a comma.'
             )
 
     def textF7_help(self, event):
@@ -2115,7 +2119,7 @@ class RandomForestClassifier:
             'Dropout Rate: \nThe Dropout layer randomly sets input units to 0 with a frequency of rate at each step during training time, which helps prevent overfitting. Inputs not set to 0 are scaled up by 1/(1 - rate) such that the sum over all inputs is unchanged. \n\n' +
             'Range: (0.0,1.0)\n' +
             'Default Value: 0.2\n\n' +
-            'Format: Float'
+            'Format: Either a single value (positive integer) for all the layers or a list of lenght equal to Depth parameters with values for each layer separated by a comma. '
             )
         
     def textF8_help(self, event):
@@ -2125,8 +2129,11 @@ class RandomForestClassifier:
         self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
-            'To set the number of channels (bands). Set this equal to the number of channels (bands) in the input image.\nIts default value is 16')
-
+            'Filter Depth: The number of filters in each convolution layers\n \n\n' +
+            'Default Value: 16\n\n' +
+            'Format: Either a single value (positive integer) for all the layers or a list of lenght equal to Depth parameters with values for each layer separated by a comma. '
+            )
+        
     def textF9_help(self, event):
 
         self.help_head2()
@@ -2134,8 +2141,11 @@ class RandomForestClassifier:
         self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
-            'For unet classifier, specify the number of convolutional layers you want your input to pass through before entering the Transpose layer.\nIts default value is 1.\nRefer to model architecture of UNET for more information.')
-
+            'Conv per conv block: \nNumber of convolutional layers per CONV Block.\n\n' +
+            'Default Value: 1\n\n' +
+            'Format: Either a single value (positive integer) for all the layers or a list of lenght equal to Depth parameters with values for each layer separated by a comma.'
+            )
+        
     def textF10_help(self, event):
 
         self.help_head2()
@@ -2155,7 +2165,12 @@ class RandomForestClassifier:
         self.dlg.htextBrowser_tab2.setFontUnderline(False)
         self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
-        self.dlg.htextBrowser_tab2.append('This is to input vector\nIts default value is 1')
+        self.dlg.htextBrowser_tab2.append(
+            'Conv per Res block: \nNumber of convolutional layers in Res Block within CONV Block.\n\n' +
+            'Default Value: 1\n\n' +
+            'Format: Either a single value (positive integer) for all the layers or a list of lenght equal to Depth parameters with values for each layer separated by a comma.'
+            )
+        
 
     def checkbox1_help(self, event):
 
@@ -2176,7 +2191,8 @@ class RandomForestClassifier:
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
             'Optimizer: \nAlgorithms or methods that change the attributes of the neural network such as weights and learning rate in order to reduce the losses. Optimizer is selected according to the type and volume of data at hand\n\n' +
-            'Default Value: Adam\n\n' 
+            'Default Value: Adam\n\n'
+            'Options: Adam, Adagrad, RMS, SGD'
             )
        
     def list2_help(self, event):
@@ -2188,6 +2204,7 @@ class RandomForestClassifier:
         self.dlg.htextBrowser_tab2.append(
             'Activation Function: \n In artificial neural networks, the activation function of a node defines the output of that node given an input or set of inputs. Softmax/Sigmoid type classification function is used for the final output layer and functions like ReLu/tanh are used for intermediate layers\n\n' +
             'Default Value: ReLu\n\n'
+            'Options: ReLu, Sigmoid, Tanh'
             )
        
     def list3_help(self, event):
