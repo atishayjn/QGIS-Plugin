@@ -1815,83 +1815,106 @@ class RandomForestClassifier:
 
         self.help_head1()
         self.dlg.htextBrowser_tab1.setFontUnderline(False)
-        self.dlg.htextBrowser_tab1.setFontPointSize(10)
+        self.dlg.htextBrowser_tab1.setFontPointSize(9)
         self.dlg.htextBrowser_tab1.setFontWeight(50)
         self.dlg.htextBrowser_tab1.append(
-            'This input field is to specify the location of the image to be segregated into tiles.\nIt should be a raster image i.e in .tiff format')
+            'Image Address: \nLocation of the input training image.\n\n' +
+            'Format: .TIFF file format'
+            )
 
     def InpF2_help(self, event):
 
         self.help_head1()
         self.dlg.htextBrowser_tab1.setFontUnderline(False)
-        self.dlg.htextBrowser_tab1.setFontPointSize(10)
+        self.dlg.htextBrowser_tab1.setFontPointSize(9)
         self.dlg.htextBrowser_tab1.setFontWeight(50)
         self.dlg.htextBrowser_tab1.append(
-            'This input field is to specify the location of the label to be segregated into tiles.\nIt should be a vector or a raster(i.e .tiff format)')
+            'Label Address: \nLocation of the ground truth image or the labelled image. \n\n' +
+            'Format:.tiff, .shp or .shx file format '
+            )
 
     def InpF3_help(self, event):
 
         self.help_head1()
         self.dlg.htextBrowser_tab1.setFontUnderline(False)
-        self.dlg.htextBrowser_tab1.setFontPointSize(10)
+        self.dlg.htextBrowser_tab1.setFontPointSize(9)
         self.dlg.htextBrowser_tab1.setFontWeight(50)
         self.dlg.htextBrowser_tab1.append(
-            'This input field is to specify the output location where the generated tiles of image and label are to be saved')
+            'Tile Output Location: \nLocation of the folder where the tiles will be  stored once generated.\n\n' +
+            'Format: String (abc)'
+             )
 
     def textF1_help(self, event):
 
         self.help_head1()
         self.dlg.htextBrowser_tab1.setFontUnderline(False)
-        self.dlg.htextBrowser_tab1.setFontPointSize(10)
+        self.dlg.htextBrowser_tab1.setFontPointSize(9)
         self.dlg.htextBrowser_tab1.setFontWeight(50)
         self.dlg.htextBrowser_tab1.append(
-            'This is to set the number of tiles the image will be divided horizontally.\nIts default value is 500')
-
+            'X: \nThe horizontal dimension of the tiles to be generated.\n\n' +
+            'Default Value: 512\n\n' +
+            'Format: Positive number /n/t **for UNET it should be an even number >=32'
+            )
+        
     def textF2_help(self, event):
 
         self.help_head1()
         self.dlg.htextBrowser_tab1.setFontUnderline(False)
-        self.dlg.htextBrowser_tab1.setFontPointSize(10)
+        self.dlg.htextBrowser_tab1.setFontPointSize(9)
         self.dlg.htextBrowser_tab1.setFontWeight(50)
         self.dlg.htextBrowser_tab1.append(
-            'This is to set the number of tiles the image will be divided vertically.\nIts default value is 700')
-
+            'Y: \nThe vertical dimension of the tiles to be generated\n\n' +
+            'Default Value: 512\n\n' +
+            'Format: Positive number /n/t **for UNET it should be an even number >=32'
+            )
+        
     def InpF4_help(self, event):
 
         self.help_head3()
         self.dlg.htextBrowser_tab3.setFontUnderline(False)
-        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontPointSize(9)
         self.dlg.htextBrowser_tab3.setFontWeight(50)
         self.dlg.htextBrowser_tab3.append(
-            'This input field is to specify the location of the folder containing tiles of the image.\nThe tiles should be in raster format(.tiff)')
+            'Image Address: \nLocation of the input training image\n\n' +
+            'Format: .tiff file format'
+            )
+       
 
     def InpF5_help(self, event):
 
         self.help_head3()
         self.dlg.htextBrowser_tab3.setFontUnderline(False)
-        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontPointSize(9)
         self.dlg.htextBrowser_tab3.setFontWeight(50)
         self.dlg.htextBrowser_tab3.append(
-            'This input field is to specify the location of the folder containing tiles of the mask (label) image.\nThe tiles should be in raster format(.tiff)')
+            'Mask Address: \nLocation of the ground truth image or the mask image. \n\n' +
+            'Format: .tiff or .shx file format'
+            )
+        
 
     def InpF6_help(self, event):
 
         self.help_head3()
         self.dlg.htextBrowser_tab3.setFontUnderline(False)
-        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontPointSize(9)
         self.dlg.htextBrowser_tab3.setFontWeight(50)
         self.dlg.htextBrowser_tab3.append(
-            'This input field is to specify the location of the saved model.\nThe model should be in H5 file format.')
+            'Model Address: \nLocation of saved model architecture.\n\n' +
+            'Format: .JSON file format'
+            )
+        
 
     def InpF7_help(self, event):
 
         self.help_head3()
         self.dlg.htextBrowser_tab3.setFontUnderline(False)
-        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontPointSize(9)
         self.dlg.htextBrowser_tab3.setFontWeight(50)
         self.dlg.htextBrowser_tab3.append(
-            'This input field is to specify the output location where the trained data file is to be saved.\nThe file will be saved as a JSON file.')
-
+            'Output Address: \n Location of model weights\n\n' +
+            'Format: .h5 file format'
+            )
+       
     def textF12_help(self, event):
 
         self.help_head3()
@@ -1912,151 +1935,194 @@ class RandomForestClassifier:
 
         self.help_head3()
         self.dlg.htextBrowser_tab3.setFontUnderline(False)
-        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontPointSize(9)
         self.dlg.htextBrowser_tab3.setFontWeight(50)
         self.dlg.htextBrowser_tab3.append(
-            'To set the Maximum Number of Iteration. It defines the number of times the batch data passes through the algorithm.\nIts default value is 30')
-
+            'Maximum Iteration: \nThe number of times the batch data passes through the algorithm\n\n' +
+            'Default Value: 30\n\n' +
+            'Format: Positive Integer'
+            )
+        
     def InpF8_help(self, event):
 
         self.help_head4()
         self.dlg.htextBrowser_tab4.setFontUnderline(False)
-        self.dlg.htextBrowser_tab4.setFontPointSize(10)
+        self.dlg.htextBrowser_tab4.setFontPointSize(9)
         self.dlg.htextBrowser_tab4.setFontWeight(50)
         self.dlg.htextBrowser_tab4.append(
-            'This input field is to specify the location of the image for training of the data.\nIt should be a raster image(i.e in .tiff format)')
-
+            'Image Address: \nLocation of the input training image.\n\n' +
+            'Format: .TIFF file format'
+            )
+        
     def InpF9_help(self, event):
 
         self.help_head4()
         self.dlg.htextBrowser_tab4.setFontUnderline(False)
-        self.dlg.htextBrowser_tab4.setFontPointSize(10)
+        self.dlg.htextBrowser_tab4.setFontPointSize(9)
         self.dlg.htextBrowser_tab4.setFontWeight(50)
         self.dlg.htextBrowser_tab4.append(
-            'This input field is to specify the location of the label file.\nIt should be a vector.')
+            'Label Address: \nLocation of the ground truth image or the labelled image\n\n' +
+            'Format: .shx file format'
+            )
+        
 
     def InpF10_help(self, event):
 
         self.help_head4()
         self.dlg.htextBrowser_tab4.setFontUnderline(False)
-        self.dlg.htextBrowser_tab4.setFontPointSize(10)
+        self.dlg.htextBrowser_tab4.setFontPointSize(9)
         self.dlg.htextBrowser_tab4.setFontWeight(50)
         self.dlg.htextBrowser_tab4.append(
-            'This input field is to specify the output location where the trained data file is to be saved.\nThe file will be saved as a pickle file.')
-
+            'Model Address: \nLocation of model weights.\n\n' +
+            'Format: .sav file format'
+            )
+       
     def textF14_help(self, event):
 
         self.help_head4()
         self.dlg.htextBrowser_tab4.setFontUnderline(False)
-        self.dlg.htextBrowser_tab4.setFontPointSize(10)
+        self.dlg.htextBrowser_tab4.setFontPointSize(9)
         self.dlg.htextBrowser_tab4.setFontWeight(50)
         self.dlg.htextBrowser_tab4.append(
-            'To set the number of trees. This parameters decides the total number of trees in your random forest classifier.\nIts default value is set to 20.')
+            'Number of Trees: \nTotal number of trees in random forest. \n\n' +
+            'Default Value: 20\n\n' +
+            'Format: Positive integer'
+            )
+       
 
     def textF15_help(self, event):
 
         self.help_head4()
         self.dlg.htextBrowser_tab4.setFontUnderline(False)
-        self.dlg.htextBrowser_tab4.setFontPointSize(10)
+        self.dlg.htextBrowser_tab4.setFontPointSize(9)
         self.dlg.htextBrowser_tab4.setFontWeight(50)
         self.dlg.htextBrowser_tab4.append(
-            'To set the Depth.This parameters decides how deep the trees in the random forest will be. Deeper trees often lead to overfitting and also increase the training time.\nBy default it is set to None (Maximum Depth)')
-
+            'Depth of Trees: \nTotal height of each tree present in the random forest. Deeper trees often lead to overfitting.\n\n' +
+            'Default Value: Max i.e maximum depth possible.\n\n' +
+            'Format: Positive integer'
+            )
+        
     def InpF11_help(self, event):
 
         self.help_head5()
         self.dlg.htextBrowser_tab5.setFontUnderline(False)
-        self.dlg.htextBrowser_tab5.setFontPointSize(10)
+        self.dlg.htextBrowser_tab5.setFontPointSize(9)
         self.dlg.htextBrowser_tab5.setFontWeight(50)
         self.dlg.htextBrowser_tab5.append(
-            'This input field is to specify the location of image in case of Non-Neural network based classifier and location of folder containing tiles of image in case of Neural network based classifier.\nThe image or tiles should be in raster format(i.e .tiff)')
-
+            'Image Location: \nLocation of tiles generated for input values\n\n' 
+            )
+       
     def InpF12_help(self, event):
 
         self.help_head5()
         self.dlg.htextBrowser_tab5.setFontUnderline(False)
-        self.dlg.htextBrowser_tab5.setFontPointSize(10)
+        self.dlg.htextBrowser_tab5.setFontPointSize(9)
         self.dlg.htextBrowser_tab5.setFontWeight(50)
         self.dlg.htextBrowser_tab5.append(
-            'This input field is to specify the location of trained model file.\nThe model file should be a JSON file in case of Neural Network based classification & a Pickle file in case of Non-Neural Network based classification')
-
+            'Model: \nLocation of saved model architecture (required only for Neural Network based classifier\n\n' +
+            'Format: .JSON file format'
+            )
+       
     def InpF13_help(self, event):
 
         self.help_head5()
         self.dlg.htextBrowser_tab5.setFontUnderline(False)
-        self.dlg.htextBrowser_tab5.setFontPointSize(10)
+        self.dlg.htextBrowser_tab5.setFontPointSize(9)
         self.dlg.htextBrowser_tab5.setFontWeight(50)
         self.dlg.htextBrowser_tab5.append(
-            'This input is required only for Neural Network based classification.\nThis input field is to specify the location of model weights.\nThe model weights should be in H5 file format')
-
+            'Model weights: \nWeights of the model saved after training\n\n' +
+            'Format: .h5 file format'
+            )
+       
     def InpF14_help(self, event):
 
         self.help_head5()
         self.dlg.htextBrowser_tab5.setFontUnderline(False)
-        self.dlg.htextBrowser_tab5.setFontPointSize(10)
+        self.dlg.htextBrowser_tab5.setFontPointSize(9)
         self.dlg.htextBrowser_tab5.setFontWeight(50)
         self.dlg.htextBrowser_tab5.append(
-            'This input field is to specify the output location where the classified image is to be saved.\nThe image will be saved as a raster image(i.e .tiff format)')
+            'Output Location: \nLocation of the final classified image\n\n' +
+            )
+        
 
     def InpF15_help(self, event):
 
         self.help_head2()
         self.dlg.htextBrowser_tab2.setFontUnderline(False)
-        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
-            'This input field is to specify the output location where the built model is to be saved.\nThe model will be saved in H5 file format.')
-
+            'Output Location: \nLocation of model architecture\n\n' +
+            'Format: .JSON file format'
+            )
+       
     def textF3_help(self, event):
 
         self.help_head2()
         self.dlg.htextBrowser_tab2.setFontUnderline(False)
-        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
-            'To set the number of bands. Set this parameter equal to the number of bands in your input image.\nIts default value is 3')
-
+            'Number of Bands: \nThe total number of bands (channels) in the input image\n\n' +
+            'Default Value: 3\n\n' +
+            'Format: Positive integer'
+            )
+       
     def textF4_help(self, event):
 
         self.help_head2()
         self.dlg.htextBrowser_tab2.setFontUnderline(False)
-        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
-            'To set the number classes (e.g. Forest, water bodies, build up land etc) you wish to classify.\nIts default value is 1')
-
+            'Number of classes: \n The total number of features/classes to be extracted from the input image\n\n' +
+            'Default Value: 1\n\n' +
+            'Format: Positive integer'
+            )
+        
     def textF5_help(self, event):
 
         self.help_head2()
         self.dlg.htextBrowser_tab2.setFontUnderline(False)
-        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
-            'To set the Depth. This parameter will determine the number depth of your convolution layers i.e. the number of kernels you want in the convolution layers.\nIts default value is 5')
+            'Depth: \nNumber of kernels in a convolution layer\n\n' +
+            'Default Value: 5\n\n' +
+            'Format: Positive integer'
+            )
+        
 
     def textF6_help(self, event):
 
         self.help_head2()
         self.dlg.htextBrowser_tab2.setFontUnderline(False)
-        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
-            'To set the Kernel size. If you wish to build a CNN based model, then the kernel will act as a filter that is used to extract the features from the image.The kernel is a matrix that moves over the input data, performs the dot product with the sub-region of input data, and gets the output as the matrix of dot products.\nIts default value is 3')
+            'Kernel Size: \nKernel acts as a filter that is used to extract the features from the image. It is a matrix that moves over the input data, performs the dot product with the sub-region of input data, and gets the output as the matrix of dot products. \n\n' +
+            'Default Value: 3 i.e. a matrix of size 3x3. is\n\n' +
+            'Format: Positive integer'
+            )
 
     def textF7_help(self, event):
 
         self.help_head2()
         self.dlg.htextBrowser_tab2.setFontUnderline(False)
-        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
-            'To set the Dropout Rate. It is a way of performing regularization. Regularization prevents overfitting and makes the model more robust.\nThe range for this parameter is  (0,1).\nIts default value is 0.2')
-
+            'Dropout Rate: \nThe Dropout layer randomly sets input units to 0 with a frequency of rate at each step during training time, which helps prevent overfitting. Inputs not set to 0 are scaled up by 1/(1 - rate) such that the sum over all inputs is unchanged. \n\n' +
+            'Range: (0.0,1.0)\n' +
+            'Default Value: 0.2\n\n' +
+            'Format: Float'
+            )
+        
     def textF8_help(self, event):
 
         self.help_head2()
         self.dlg.htextBrowser_tab2.setFontUnderline(False)
-        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
             'To set the number of channels (bands). Set this equal to the number of channels (bands) in the input image.\nIts default value is 16')
@@ -2065,7 +2131,7 @@ class RandomForestClassifier:
 
         self.help_head2()
         self.dlg.htextBrowser_tab2.setFontUnderline(False)
-        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
             'For unet classifier, specify the number of convolutional layers you want your input to pass through before entering the Transpose layer.\nIts default value is 1.\nRefer to model architecture of UNET for more information.')
@@ -2074,16 +2140,20 @@ class RandomForestClassifier:
 
         self.help_head2()
         self.dlg.htextBrowser_tab2.setFontUnderline(False)
-        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
-            'To set the Learning Rate.This determines how quickly the model adapts to the data.\nIt should be a positive number lying between 0.0 and 1.0.\nIts default value is 0.001')
-
+            'Learning Rate: \nThis controls how quickly the model adapts to the training data.\n\n' +
+            'Range:(0.0,1.0)\n' +
+            'Default Value: 0.001\n\n' +
+            'Format: Float'
+            )
+        
     def textF11_help(self, event):
 
         self.help_head2()
         self.dlg.htextBrowser_tab2.setFontUnderline(False)
-        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append('This is to input vector\nIts default value is 1')
 
@@ -2091,73 +2161,91 @@ class RandomForestClassifier:
 
         self.help_head2()
         self.dlg.htextBrowser_tab2.setFontUnderline(False)
-        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
-            'To enable Batch Normalization. It is another technique for performing regularization.\nBy default it will be enabled')
+            'Batch Normalization: \nBatch normalization is a technique for improving the speed, performance, and stability of artificial neural networks.\n\n' +
+            )
+        
 
     def list1_help(self, event):
 
         self.help_head2()
         self.dlg.htextBrowser_tab2.setFontUnderline(False)
-        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
-            'To select the optimizer from the given list.These are algorithms or methods that are used to change the attributes of the neural network such as weights and learning rate in order to reduce the losses.\nChoose any one depending upon the problem and dataset.')
-
+            'Optimizer: \nAlgorithms or methods that change the attributes of the neural network such as weights and learning rate in order to reduce the losses. Optimizer is selected according to the type and volume of data at hand\n\n' +
+            'Default Value: Adam\n\n' 
+            )
+       
     def list2_help(self, event):
 
         self.help_head2()
         self.dlg.htextBrowser_tab2.setFontUnderline(False)
-        self.dlg.htextBrowser_tab2.setFontPointSize(10)
+        self.dlg.htextBrowser_tab2.setFontPointSize(9)
         self.dlg.htextBrowser_tab2.setFontWeight(50)
         self.dlg.htextBrowser_tab2.append(
-            'To set the activation function. In artificial neural networks, the activation function of a node defines the output of that node given an input or set of inputs.\nUse Relu for intermediate layers\nUse sigmoid(binary classification) and softmax(multi class classification) for the output (last) layer.')
-
+            'Activation Function: \n In artificial neural networks, the activation function of a node defines the output of that node given an input or set of inputs. Softmax/Sigmoid type classification function is used for the final output layer and functions like ReLu/tanh are used for intermediate layers\n\n' +
+            'Default Value: ReLu\n\n'
+            )
+       
     def list3_help(self, event):
 
         self.help_head3()
         self.dlg.htextBrowser_tab3.setFontUnderline(False)
-        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontPointSize(9)
         self.dlg.htextBrowser_tab3.setFontWeight(50)
         self.dlg.htextBrowser_tab3.append(
-            'To select the classification method for which training of data is to be done')
+            'Model: \nName of the classifier\n\n'
+            )
 
     def list4_help(self, event):
 
         self.help_head3()
         self.dlg.htextBrowser_tab3.setFontUnderline(False)
-        self.dlg.htextBrowser_tab3.setFontPointSize(10)
+        self.dlg.htextBrowser_tab3.setFontPointSize(9)
         self.dlg.htextBrowser_tab3.setFontWeight(50)
         self.dlg.htextBrowser_tab3.append(
-            'To set the train validation ratio.\nIt is the ratio for spliting your data into training and validation')
-
+            'Train Validation Ratio: \nTrain-Validation set split ratio\n\n' +
+            'Range: (0.0-1.0), (0-100)\n' +
+            'Default Value: 0.2/20%\n\n' +
+            'Format: Float, Integer'
+            )
+        
     def list5_help(self, event):
 
         self.help_head4()
         self.dlg.htextBrowser_tab4.setFontUnderline(False)
-        self.dlg.htextBrowser_tab4.setFontPointSize(10)
+        self.dlg.htextBrowser_tab4.setFontPointSize(9)
         self.dlg.htextBrowser_tab4.setFontWeight(50)
         self.dlg.htextBrowser_tab4.append(
-            'To select the classification method for which training of data is to be done')
-
+            'Model: \nName of classifier' 
+            )
+       
     def list6_help(self, event):
 
         self.help_head4()
         self.dlg.htextBrowser_tab4.setFontUnderline(False)
-        self.dlg.htextBrowser_tab4.setFontPointSize(10)
+        self.dlg.htextBrowser_tab4.setFontPointSize(9)
         self.dlg.htextBrowser_tab4.setFontWeight(50)
         self.dlg.htextBrowser_tab4.append(
-            'To set the train validation ratio.\nIt is the ratio for spliting your data into training and validation')
-
+            'Train Validation Ratio: \Train-Validation set split ratio.\n\n' +
+            'Range: (0.0-1.0), (0-100)\n' +
+            'Default Value: 0.1/10%\n\n' +
+            'Format: Float, Integer'
+            )
+       
     def list7_help(self, event):
 
         self.help_head5()
         self.dlg.htextBrowser_tab5.setFontUnderline(False)
-        self.dlg.htextBrowser_tab5.setFontPointSize(10)
+        self.dlg.htextBrowser_tab5.setFontPointSize(9)
         self.dlg.htextBrowser_tab5.setFontWeight(50)
-        self.dlg.htextBrowser_tab5.append('To select the classification model for the classification of image')
-
+        self.dlg.htextBrowser_tab5.append(
+            'Model: \nName of classifier\n\n' 
+            )
+        
     def clearbrowser(self, event):
 
         self.dlg.htextBrowser_tab1.clear()
